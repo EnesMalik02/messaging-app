@@ -16,7 +16,20 @@ namespace messagingApp
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+
+            // İlk LoginForm örneği
+            LoginForm login1 = new LoginForm();
+            // İkinci LoginForm örneği
+            LoginForm login2 = new LoginForm();
+
+            // Her iki formu da göster
+            login1.Show();
+            login2.Show();
+
+            // Bu noktada henüz Application.Run() ile bir form belirtilmedi.
+            // Fakat Application.Run() parametresiz çağırılırsa, açık formlar olduğu sürece döngü devam eder.
+            Application.Run();
         }
+
     }
 }
