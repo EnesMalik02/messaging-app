@@ -366,7 +366,22 @@ namespace messagingApp
                 string lastMessage = convObj.lastMessage != null ? (string)convObj.lastMessage : "";
 
                 string itemText = $"{otherUserEmail} - {lastMessage}";
-                lstConversations.Items.Add(new ListBoxItem { Text = itemText, Tag = conversationId });
+//                lstConversations.Items.Add(new ListBoxItem { Text = itemText, Tag = conversationId });
+                ListBoxItem newItem = new ListBoxItem { Text = itemText, Tag = conversationId };
+                AddToListBoxSafely(lstConversations, newItem);
+            }
+        }
+        private void AddToListBoxSafely(ListBox listBox, ListBoxItem item)
+        {
+            if (listBox.InvokeRequired)
+            {
+                // Eğer farklı bir thread'den erişiliyorsa, Invoke kullanılır
+                listBox.Invoke(new Action(() => listBox.Items.Add(item)));
+            }
+            else
+            {
+                // Eğer aynı thread'den erişiliyorsa, doğrudan işlem yapılır
+                listBox.Items.Add(item);
             }
         }
 
