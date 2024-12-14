@@ -14,15 +14,18 @@ namespace messagingApp
         private string currentUserEmail;
         private string currentUserId;
         private long lastCheckedUpdate = 0; // Unix zaman damgası olarak saklanır
+        private string otherUserName;
 
         // Kendi Firebase URL'nizi buraya yazın
         private string firebaseUrl = "https://messaging-app-11f5f-default-rtdb.europe-west1.firebasedatabase.app";
 
-        public ClientForm(string email, string userId)
+        public ClientForm(string email, string userId, string nickName)
         {
             InitializeComponent();
             currentUserEmail = email;
             currentUserId = userId;
+            selfName.Text = nickName;
+            selfID.Text = $"ID : {userId}";
         }
 
         private void ClientForm_Load(object sender, EventArgs e)
@@ -310,7 +313,7 @@ namespace messagingApp
         /// Artık "/users/{userId}.json" yapısı kullanılıyor.
         /// Kayıt sırasında '.' yerine ',' kullanıldığından geri çevirmeyi unutmayın.
         /// </summary>
-        private string GetEmailByUserId(string userId)
+        private string GetNameByUserId(string userId)
         {
             string url = $"{firebaseUrl}/users/{userId}.json";
             string json = GetJson(url);
@@ -318,6 +321,7 @@ namespace messagingApp
 
             dynamic userObj = JsonConvert.DeserializeObject<dynamic>(json);
             string name = (string)userObj.nickname;
+            otherUserName = name;
             return name;
         }
 
@@ -354,7 +358,7 @@ namespace messagingApp
                     ? participants[1].ToString()
                     : participants[0].ToString();
 
-                string otherUserEmail = GetEmailByUserId(otherUserId);
+                string otherUserEmail = GetNameByUserId(otherUserId);
                 string lastMessage = convObj.lastMessage != null ? (string)convObj.lastMessage : "";
 
                 string itemText = $"{otherUserEmail} - {lastMessage}";
@@ -390,7 +394,7 @@ namespace messagingApp
             {
                 string senderId = msg.Value.sender;
                 string text = msg.Value.text;
-                string prefix = senderId == currentUserId ? "Ben: " : "Onlar: ";
+                string prefix = senderId == currentUserId ? "Ben: " : $"{otherUserName}: ";
                 lstMessages.Items.Add(prefix + text);
             }
         }
@@ -549,6 +553,29 @@ namespace messagingApp
             using (var sr = new StreamReader(response.GetResponseStream()))
             {
                 string result = sr.ReadToEnd();
+            }
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+            //
+        }
+
+        private void selfName_Click(object sender, EventArgs e)
+        {
+            //
+        }
+
+        private void simpleButton1_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(currentUserId))
+            {
+                Clipboard.SetText(currentUserId);
+                MessageBox.Show("Metin kopyalandı.");
+            }
+            else
+            {
+                MessageBox.Show("Kopyalanacak metin yok!");
             }
         }
     }

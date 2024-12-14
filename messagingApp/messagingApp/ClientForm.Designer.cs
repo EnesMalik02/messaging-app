@@ -36,6 +36,9 @@
             this.btnSend = new System.Windows.Forms.Button();
             this.txtMessage = new System.Windows.Forms.TextBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.selfName = new DevExpress.XtraEditors.LabelControl();
+            this.selfID = new DevExpress.XtraEditors.LabelControl();
+            this.simpleButton1 = new DevExpress.XtraEditors.SimpleButton();
             this.SuspendLayout();
             // 
             // lstConversations
@@ -52,7 +55,7 @@
             this.lstMessages.FormattingEnabled = true;
             this.lstMessages.Location = new System.Drawing.Point(147, 13);
             this.lstMessages.Name = "lstMessages";
-            this.lstMessages.Size = new System.Drawing.Size(641, 394);
+            this.lstMessages.Size = new System.Drawing.Size(448, 394);
             this.lstMessages.TabIndex = 1;
             // 
             // txtOtherUserId
@@ -75,9 +78,9 @@
             // 
             // btnSend
             // 
-            this.btnSend.Location = new System.Drawing.Point(701, 418);
+            this.btnSend.Location = new System.Drawing.Point(512, 416);
             this.btnSend.Name = "btnSend";
-            this.btnSend.Size = new System.Drawing.Size(87, 23);
+            this.btnSend.Size = new System.Drawing.Size(83, 23);
             this.btnSend.TabIndex = 4;
             this.btnSend.Text = "Mesaj Gönder";
             this.btnSend.UseVisualStyleBackColor = true;
@@ -87,7 +90,7 @@
             // 
             this.txtMessage.Location = new System.Drawing.Point(147, 418);
             this.txtMessage.Name = "txtMessage";
-            this.txtMessage.Size = new System.Drawing.Size(548, 20);
+            this.txtMessage.Size = new System.Drawing.Size(359, 20);
             this.txtMessage.TabIndex = 5;
             // 
             // timer1
@@ -95,11 +98,51 @@
             this.timer1.Interval = 2000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // selfName
+            // 
+            this.selfName.AccessibleRole = System.Windows.Forms.AccessibleRole.None;
+            this.selfName.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.selfName.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
+            this.selfName.LineLocation = DevExpress.XtraEditors.LineLocation.Center;
+            this.selfName.LineOrientation = DevExpress.XtraEditors.LabelLineOrientation.Vertical;
+            this.selfName.LineStyle = System.Drawing.Drawing2D.DashStyle.DashDotDot;
+            this.selfName.Location = new System.Drawing.Point(699, 13);
+            this.selfName.Name = "selfName";
+            this.selfName.Size = new System.Drawing.Size(94, 33);
+            this.selfName.TabIndex = 21;
+            this.selfName.Text = "labelControl1";
+            this.selfName.Click += new System.EventHandler(this.selfName_Click);
+            // 
+            // selfID
+            // 
+            this.selfID.AccessibleRole = System.Windows.Forms.AccessibleRole.None;
+            this.selfID.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.selfID.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
+            this.selfID.LineLocation = DevExpress.XtraEditors.LineLocation.Center;
+            this.selfID.LineStyle = System.Drawing.Drawing2D.DashStyle.DashDotDot;
+            this.selfID.Location = new System.Drawing.Point(601, 52);
+            this.selfID.Name = "selfID";
+            this.selfID.Size = new System.Drawing.Size(224, 33);
+            this.selfID.TabIndex = 22;
+            this.selfID.Text = "labelControl1";
+            // 
+            // simpleButton1
+            // 
+            this.simpleButton1.Location = new System.Drawing.Point(671, 91);
+            this.simpleButton1.Name = "simpleButton1";
+            this.simpleButton1.Size = new System.Drawing.Size(95, 30);
+            this.simpleButton1.TabIndex = 23;
+            this.simpleButton1.Text = "simpleButton1";
+            this.simpleButton1.Click += new System.EventHandler(this.simpleButton1_Click);
+            // 
             // ClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(837, 450);
+            this.Controls.Add(this.simpleButton1);
+            this.Controls.Add(this.selfID);
+            this.Controls.Add(this.selfName);
             this.Controls.Add(this.txtMessage);
             this.Controls.Add(this.btnSend);
             this.Controls.Add(this.btnNewConversation);
@@ -123,5 +166,8 @@
         private System.Windows.Forms.Button btnSend;
         private System.Windows.Forms.TextBox txtMessage;
         private System.Windows.Forms.Timer timer1;
+        private DevExpress.XtraEditors.LabelControl selfName;
+        private DevExpress.XtraEditors.LabelControl selfID;
+        private DevExpress.XtraEditors.SimpleButton simpleButton1;
     }
 }

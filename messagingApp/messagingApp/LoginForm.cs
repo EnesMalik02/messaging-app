@@ -76,7 +76,7 @@ namespace messagingApp
             }
 
             // ClientForm'u aç
-            var clientForm = new ClientForm(email, currentUserId);
+            var clientForm = new ClientForm(email, currentUserId, nickName);
             clientForm.Show();
             this.Hide();
         }
