@@ -211,57 +211,57 @@ namespace messagingApp
             string conversationId = selectedItem.Tag.ToString();
             LoadMessages(conversationId);
         }
-private void btnSend_Click(object sender, EventArgs e)
-{
-    if (lstConversations.SelectedItem == null)
-    {
-        MessageBox.Show("Önce bir konuşma seçin.");
-        return;
-    }
+        private void btnSend_Click(object sender, EventArgs e)
+        {
+            if (lstConversations.SelectedItem == null)
+            {
+                MessageBox.Show("Önce bir konuşma seçin.");
+                return;
+            }
 
-    // Mevcut konuşmayı al
-    var selectedItem = (ListBoxItem)lstConversations.SelectedItem;
-    string conversationId = selectedItem.Tag.ToString();
-    string msg = txtMessage.Text.Trim();
+            // Mevcut konuşmayı al
+            var selectedItem = (ListBoxItem)lstConversations.SelectedItem;
+            string conversationId = selectedItem.Tag.ToString();
+            string msg = txtMessage.Text.Trim();
 
-    // Eğer mesaj boşsa işlem yapma
-    if (string.IsNullOrEmpty(msg))
-    {
-        MessageBox.Show("Lütfen bir mesaj yazın.");
-        return;
-    }
+            // Eğer mesaj boşsa işlem yapma
+            if (string.IsNullOrEmpty(msg))
+            {
+                MessageBox.Show("Lütfen bir mesaj yazın.");
+                return;
+            }
 
-    // Mesajı Firebase'e ekle
-    string url = $"{firebaseUrl}/messages/{conversationId}.json";
-    var msgObj = new
-    {
-        sender = currentUserId,
-        text = msg,
-        timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-    };
-    string json = JsonConvert.SerializeObject(msgObj);
-    PostJson(url, json);
+            // Mesajı Firebase'e ekle
+            string url = $"{firebaseUrl}/messages/{conversationId}.json";
+            var msgObj = new
+            {
+                sender = currentUserId,
+                text = msg,
+                timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            };
+            string json = JsonConvert.SerializeObject(msgObj);
+            PostJson(url, json);
 
-    // Konuşmayı Firebase'de güncelle (lastMessage ve lastUpdate)
-    string convUrl = $"{firebaseUrl}/conversations/{conversationId}.json";
-    var convUpdate = new
-    {
-        lastMessage = msg,
-        lastUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-    };
-    string convJson = JsonConvert.SerializeObject(convUpdate);
-    PatchJson(convUrl, convJson);
+            // Konuşmayı Firebase'de güncelle (lastMessage ve lastUpdate)
+            string convUrl = $"{firebaseUrl}/conversations/{conversationId}.json";
+            var convUpdate = new
+            {
+                lastMessage = msg,
+                lastUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            };
+            string convJson = JsonConvert.SerializeObject(convUpdate);
+            PatchJson(convUrl, convJson);
 
-    // Alıcı tarafın userConversations düğümünü güncelle
-    UpdateRecipientConversation(conversationId);
+            // Alıcı tarafın userConversations düğümünü güncelle
+            UpdateRecipientConversation(conversationId);
 
-    // Mesaj kutusunu temizle
-    txtMessage.Clear();
+            // Mesaj kutusunu temizle
+            txtMessage.Clear();
 
-    // Konuşmaları ve mesajları güncelle
-    LoadConversations();  // Sohbet listesini yeniler
-    LoadMessages(conversationId);  // Mesajları yeniler
-}
+            // Konuşmaları ve mesajları güncelle
+            LoadConversations();  // Sohbet listesini yeniler
+            LoadMessages(conversationId);  // Mesajları yeniler
+        }
 
 
         private void RefreshConversationAndMessages(string conversationId)
