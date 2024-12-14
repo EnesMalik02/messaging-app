@@ -18,7 +18,7 @@ namespace messagingApp
 
         private void LoginForm_Load(object sender, EventArgs e)
         {
-            // Form bşaladığında yapılacaklar
+            // Form başlatıldığında yapılacak işlemler
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -34,6 +34,13 @@ namespace messagingApp
             if (string.IsNullOrEmpty(email))
             {
                 MessageBox.Show("Lütfen e-posta adresinizi girin.");
+                return;
+            }
+
+            // E-posta doğrulama
+            if (!IsValidEmail(email))
+            {
+                MessageBox.Show("Lütfen geçerli bir e-posta adresi girin.");
                 return;
             }
 
@@ -116,6 +123,19 @@ namespace messagingApp
                 // result "null" değilse ve hata vermediyse başarı kabul edebiliriz.
             }
             return true;
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
