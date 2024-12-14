@@ -327,7 +327,8 @@ namespace messagingApp
 
         private void LoadConversations()
         {
-            // Firebase'den kullanıcının konuşma listesini al
+            lstConversations.Items.Clear(); // Önce mevcut item'ları temizle
+
             string url = $"{firebaseUrl}/userConversations/{currentUserId}.json";
             string convsJson = GetJson(url);
             if (convsJson == null || convsJson == "null") return;
@@ -335,7 +336,7 @@ namespace messagingApp
             var conversations = JsonConvert.DeserializeObject<Dictionary<string, bool>>(convsJson);
             if (conversations == null) return;
 
-            bool isUpdated = false; // UI'yi yalnızca gerektiğinde güncellemek için bir kontrol
+            bool isUpdated = false;
 
             foreach (var kvp in conversations)
             {
@@ -347,16 +348,12 @@ namespace messagingApp
 
                 dynamic convObj = JsonConvert.DeserializeObject<dynamic>(convData);
 
-                // Konuşmanın son güncelleme zamanını al
                 long lastUpdate = convObj.lastUpdate != null ? (long)convObj.lastUpdate : 0;
 
-                // Eğer konuşma zaten güncelse atla
                 if (lastUpdate <= lastCheckedUpdate) continue;
 
-                // Eğer yeni bir güncelleme varsa listeyi yenilemek için işaretle
                 isUpdated = true;
 
-                // Sohbetteki diğer kullanıcıyı bul
                 var participants = convObj.participants;
                 string otherUserId = participants[0].ToString() == currentUserId
                     ? participants[1].ToString()
@@ -365,12 +362,10 @@ namespace messagingApp
                 string otherUserEmail = GetEmailByUserId(otherUserId);
                 string lastMessage = convObj.lastMessage != null ? (string)convObj.lastMessage : "";
 
-                // lstConversations'a ekle
                 string itemText = $"{otherUserEmail} - {lastMessage}";
                 lstConversations.Items.Add(new ListBoxItem { Text = itemText, Tag = conversationId });
             }
 
-            // Eğer UI güncellendiyse, son kontrol edilen zamanı güncelle
             if (isUpdated)
             {
                 lastCheckedUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
