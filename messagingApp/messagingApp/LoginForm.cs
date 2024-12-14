@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Windows.Forms;
@@ -50,19 +51,15 @@ namespace messagingApp
                 return;
             }
 
-            // E-posta adresindeki '.' karakterlerini ',' ile değiştirelim:
-            string firebaseKey = email.Replace(".", ",");
-
             // Kullanıcıyı Firebase'den çek
-            var userRecord = GetUserByEmail(firebaseKey);
+            string uniqueUserId = GetUserIdByEmail(email); // Eğer kullanıcı varsa ID'yi al
             string currentUserId;
-            string currentUserEmail = email;
 
-            if (userRecord == null)
+            if (string.IsNullOrEmpty(uniqueUserId))
             {
                 // Kullanıcı yok, yeni oluştur
-                string newId = Guid.NewGuid().ToString(); // Benzersiz kullanıcı ID
-                bool success = CreateUserRecord(firebaseKey, newId, nickName);
+                string newId = Guid.NewGuid().ToString(); // Benzersiz ID oluştur
+                bool success = CreateUserRecord(newId, email, nickName);
                 if (!success)
                 {
                     MessageBox.Show("Kullanıcı oluşturulamadı. Daha sonra tekrar deneyin.");
@@ -74,68 +71,94 @@ namespace messagingApp
             else
             {
                 // Kayıtlı kullanıcı
-                currentUserId = (string)userRecord.id;
-                MessageBox.Show("Hoş geldiniz, ID: " + currentUserId);
+                currentUserId = uniqueUserId;
+                MessageBox.Show("Hoş geldiniz, mevcut kullanıcı ID: " + currentUserId);
             }
 
             // ClientForm'u aç
-            var clientForm = new ClientForm(currentUserEmail, currentUserId);
+            var clientForm = new ClientForm(email, currentUserId);
             clientForm.Show();
             this.Hide();
         }
 
-        private dynamic GetUserByEmail(string firebaseKey)
+        private string GetJson(string url)
         {
-            string url = $"{firebaseUrl}/users/{firebaseKey}.json";
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "GET";
-            request.ContentType = "application/json";
-
             try
             {
-                var response = (HttpWebResponse)request.GetResponse();
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.Method = "GET";
+                request.ContentType = "application/json";
+
+                using (var response = (HttpWebResponse)request.GetResponse())
                 using (var sr = new StreamReader(response.GetResponseStream()))
                 {
-                    string result = sr.ReadToEnd();
-                    if (result == "null") return null;
-                    return JsonConvert.DeserializeObject<dynamic>(result);
+                    return sr.ReadToEnd();
                 }
             }
             catch
             {
-                return null;
+                return null; // Hata durumunda `null` döner
             }
         }
 
-        private bool CreateUserRecord(string firebaseKey, string userId, string nickName)
+
+        private string GetUserIdByEmail(string email)
         {
-            string url = $"{firebaseUrl}/users/{firebaseKey}.json";
+            string emailKey = email.Replace(".", ","); // Firebase'de e-posta adresindeki "." ile çalışılamaz
+            string url = $"{firebaseUrl}/users.json";
+            string json = GetJson(url);
+
+            if (string.IsNullOrEmpty(json) || json == "null") return null;
+
+            var users = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(json);
+
+            foreach (var user in users)
+            {
+                if (user.Value.email == emailKey)
+                {
+                    return user.Key; // Kullanıcının benzersiz ID'sini döndür
+                }
+            }
+            return null;
+        }
+
+        private bool CreateUserRecord(string userId, string email, string nickName)
+        {
+            string url = $"{firebaseUrl}/users/{userId}.json";
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "PUT";
             request.ContentType = "application/json";
 
-            // Kullanıcı verisi (id ve nickname ile birlikte)
+            // Kullanıcı verisi (ID, e-posta ve nickname ile birlikte)
             var data = new
             {
-                id = userId,
+                email = email.Replace(".", ","), // Firebase'e uygun format
                 nickname = nickName
             };
 
             string jsonData = JsonConvert.SerializeObject(data);
 
-            using (var sw = new StreamWriter(request.GetRequestStream()))
+            try
             {
-                sw.Write(jsonData);
-            }
+                using (var sw = new StreamWriter(request.GetRequestStream()))
+                {
+                    sw.Write(jsonData);
+                }
 
-            var response = (HttpWebResponse)request.GetResponse();
-            using (var sr = new StreamReader(response.GetResponseStream()))
-            {
-                string result = sr.ReadToEnd();
-                // result "null" değilse ve hata vermediyse başarı kabul edebiliriz.
+                var response = (HttpWebResponse)request.GetResponse();
+                using (var sr = new StreamReader(response.GetResponseStream()))
+                {
+                    string result = sr.ReadToEnd();
+                    // Eğer "null" değilse başarı kabul edilebilir
+                    return true;
+                }
             }
-            return true;
+            catch
+            {
+                return false;
+            }
         }
+
 
         private bool IsValidEmail(string email)
         {
