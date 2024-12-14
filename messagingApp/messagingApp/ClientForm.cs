@@ -571,7 +571,7 @@ namespace messagingApp
             if (!string.IsNullOrEmpty(currentUserId))
             {
                 Clipboard.SetText(currentUserId);
-                MessageBox.Show("Metin kopyalandı.");
+                MessageBox.Show("ID kopyalandı.");
             }
             else
             {
