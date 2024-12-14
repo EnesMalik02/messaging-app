@@ -29,6 +29,12 @@ namespace messagingApp
         private void button1_Click(object sender, EventArgs e)
         {
             // Giriş Butonuna tıklandığında
+            string nickName = txtNickName.Text.Trim(); // Kullanıcı adı (nickname)
+            if (string.IsNullOrEmpty(nickName))
+            {
+                MessageBox.Show("Lütfen bir kullanıcı adı girin.");
+                return;
+            }
 
             string email = txtEmail.Text.Trim();
             if (string.IsNullOrEmpty(email))
@@ -55,8 +61,8 @@ namespace messagingApp
             if (userRecord == null)
             {
                 // Kullanıcı yok, yeni oluştur
-                string newId = Guid.NewGuid().ToString();
-                bool success = CreateUserRecord(firebaseKey, newId);
+                string newId = Guid.NewGuid().ToString(); // Benzersiz kullanıcı ID
+                bool success = CreateUserRecord(firebaseKey, newId, nickName);
                 if (!success)
                 {
                     MessageBox.Show("Kullanıcı oluşturulamadı. Daha sonra tekrar deneyin.");
@@ -101,14 +107,20 @@ namespace messagingApp
             }
         }
 
-        private bool CreateUserRecord(string firebaseKey, string userId)
+        private bool CreateUserRecord(string firebaseKey, string userId, string nickName)
         {
             string url = $"{firebaseUrl}/users/{firebaseKey}.json";
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "PUT";
             request.ContentType = "application/json";
 
-            var data = new { id = userId };
+            // Kullanıcı verisi (id ve nickname ile birlikte)
+            var data = new
+            {
+                id = userId,
+                nickname = nickName
+            };
+
             string jsonData = JsonConvert.SerializeObject(data);
 
             using (var sw = new StreamWriter(request.GetRequestStream()))
@@ -136,6 +148,11 @@ namespace messagingApp
             {
                 return false;
             }
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+            // Label 1 Click event
         }
     }
 }

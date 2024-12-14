@@ -98,7 +98,7 @@ namespace messagingApp
         }
         private string GetUserIdByEmail(string email)
         {
-            string firebaseKey = email.Replace(".", ",");
+            string firebaseKey = email;
             string url = $"{firebaseUrl}/users/{firebaseKey}.json";
             string userData = GetJson(url);
 
