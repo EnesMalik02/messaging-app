@@ -15,7 +15,6 @@ namespace messagingApp
         private string currentUserId;
         private long lastCheckedUpdate = 0; // Unix zaman damgası olarak saklanır
 
-
         // Kendi Firebase URL'nizi buraya yazın
         private string firebaseUrl = "https://messaging-app-11f5f-default-rtdb.europe-west1.firebasedatabase.app";
 
@@ -33,7 +32,7 @@ namespace messagingApp
 
             // Timer ayarları
             timer1.Interval = 2000; // 2 saniyede bir yenile
-            timer1.Tick += timer1_Tick; 
+            timer1.Tick += timer1_Tick;
             timer1.Start();
         }
 
@@ -69,20 +68,16 @@ namespace messagingApp
 
         private void UpdateUIWithNewMessage(string messageJson)
         {
-            // Gelen JSON'u mesaj objesine dönüştür
             dynamic messageObj = JsonConvert.DeserializeObject<dynamic>(messageJson);
 
-            // Mesajın göndericisi ve metni
             string senderId = messageObj.sender;
             string text = messageObj.text;
 
-            // Hangi konuşmaya ait olduğunu kontrol edin
-            string conversationId = ""; // Bu bilgiyi mesaj context'inden çekebilirsiniz (Firebase endpoint'e bağlı)
+            string conversationId = ""; // Bu bilgi genelde endpoint yapısına göre değişebilir.
 
-            // Eğer mesaj, seçili konuşmaya aitse ekranda göster
             if (lstConversations.SelectedItem != null)
             {
-                var selectedItem = (ListBoxItem)lstConversations.SelectedItem;
+                var selectedItem = (MessageList)lstConversations.SelectedItem;
                 if (selectedItem.Tag.ToString() == conversationId)
                 {
                     string prefix = senderId == currentUserId ? "Ben: " : "Onlar: ";
@@ -90,31 +85,41 @@ namespace messagingApp
                 }
             }
 
-            // Eğer mesaj yeni bir konuşma ise, konuşma listesine ekleyin
+            // Eğer yeni bir konuşma ise, tekrar konuşmaları yükleyin.
             LoadConversations();
         }
 
-
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-
+            // Text değiştiğinde yapılacak işlemler (gerekirse)
         }
+
+        /// <summary>
+        /// Yeni yapıya uygun hale getirildi.
+        /// Bu metot artık tüm kullanıcıları "/users.json" dan çekecek
+        /// ve email alanı ile eşleştirme yaparak doğru userId'yi döndürecek.
+        /// </summary>
         private string GetUserIdByEmail(string email)
         {
-            string firebaseKey = email;
-            string url = $"{firebaseUrl}/users/{firebaseKey}.json";
-            string userData = GetJson(url);
+            string emailKey = email.Replace(".", ",");
+            string url = $"{firebaseUrl}/users.json";
+            string json = GetJson(url);
 
-            if (string.IsNullOrEmpty(userData) || userData == "null")
+            if (string.IsNullOrEmpty(json) || json == "null") return null;
+
+            var users = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(json);
+
+            foreach (var user in users)
             {
-                MessageBox.Show("Bu e-posta ile kayıtlı bir kullanıcı bulunamadı.");
-                return null;
+                // Veritabanındaki email alanıyla eşleştiriyoruz
+                string userEmail = (string)user.Value.email;
+                if (userEmail == emailKey)
+                {
+                    return user.Key;
+                }
             }
-
-            dynamic user = JsonConvert.DeserializeObject<dynamic>(userData);
-            return user.id;
+            return null;
         }
-
 
         private void btnNewConversation_Click(object sender, EventArgs e)
         {
@@ -125,7 +130,6 @@ namespace messagingApp
                 return;
             }
 
-            // E-posta adresinden kullanıcı ID'sini al
             string otherUserId = GetUserIdByEmail(otherUserEmail);
             if (string.IsNullOrEmpty(otherUserId))
             {
@@ -150,7 +154,6 @@ namespace messagingApp
                 lastUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
             };
 
-            // Konuşmayı Firebase'e ekle
             string convJson = JsonConvert.SerializeObject(convData);
             PutJson($"{firebaseUrl}/conversations/{newConvId}.json", convJson);
 
@@ -162,15 +165,11 @@ namespace messagingApp
             LoadConversations();
         }
 
-
         private void AddConversationToUser(string userId, string conversationId)
         {
             string url = $"{firebaseUrl}/userConversations/{userId}/{conversationId}.json";
             PutJson(url, "true");
         }
-
-
-
 
         private string GetExistingConversationId(string userId1, string userId2)
         {
@@ -186,7 +185,6 @@ namespace messagingApp
             {
                 string conversationId = conversation.Key;
 
-                // Konuşmanın katılımcılarını al
                 string convUrl = $"{firebaseUrl}/conversations/{conversationId}.json";
                 string convData = GetJson(convUrl);
                 if (string.IsNullOrEmpty(convData) || convData == "null")
@@ -196,8 +194,8 @@ namespace messagingApp
                 var participants = convObj.participants;
 
                 if (participants != null &&
-                    (participants[0].ToString() == userId1 && participants[1].ToString() == userId2 ||
-                     participants[0].ToString() == userId2 && participants[1].ToString() == userId1))
+                    ((participants[0].ToString() == userId1 && participants[1].ToString() == userId2) ||
+                     (participants[0].ToString() == userId2 && participants[1].ToString() == userId1)))
                 {
                     return conversationId;
                 }
@@ -206,14 +204,14 @@ namespace messagingApp
             return null;
         }
 
-
         private void lstConversations_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lstConversations.SelectedItem == null) return;
-            var selectedItem = (ListBoxItem)lstConversations.SelectedItem;
+            var selectedItem = (MessageList)lstConversations.SelectedItem;
             string conversationId = selectedItem.Tag.ToString();
             LoadMessages(conversationId);
         }
+
         private void btnSend_Click(object sender, EventArgs e)
         {
             if (lstConversations.SelectedItem == null)
@@ -222,12 +220,10 @@ namespace messagingApp
                 return;
             }
 
-            // Mevcut konuşmayı al
-            var selectedItem = (ListBoxItem)lstConversations.SelectedItem;
+            var selectedItem = (MessageList)lstConversations.SelectedItem;
             string conversationId = selectedItem.Tag.ToString();
             string msg = txtMessage.Text.Trim();
 
-            // Eğer mesaj boşsa işlem yapma
             if (string.IsNullOrEmpty(msg))
             {
                 MessageBox.Show("Lütfen bir mesaj yazın.");
@@ -245,7 +241,7 @@ namespace messagingApp
             string json = JsonConvert.SerializeObject(msgObj);
             PostJson(url, json);
 
-            // Konuşmayı Firebase'de güncelle (lastMessage ve lastUpdate)
+            // Konuşmayı güncelle
             string convUrl = $"{firebaseUrl}/conversations/{conversationId}.json";
             var convUpdate = new
             {
@@ -255,25 +251,19 @@ namespace messagingApp
             string convJson = JsonConvert.SerializeObject(convUpdate);
             PatchJson(convUrl, convJson);
 
-            // Alıcı tarafın userConversations düğümünü güncelle
+            // Alıcının userConversations'ını güncelle
             UpdateRecipientConversation(conversationId);
 
-            // Mesaj kutusunu temizle
             txtMessage.Clear();
-
-            // Konuşmaları ve mesajları güncelle
-            LoadConversations();  // Sohbet listesini yeniler
-            LoadMessages(conversationId);  // Mesajları yeniler
+            LoadConversations();
+            LoadMessages(conversationId);
         }
-
 
         private void RefreshConversationAndMessages(string conversationId)
         {
-            // Konuşma listesini güncelle
             LoadConversations();
 
-            // Sohbetin seçili durumda kalmasını sağla
-            foreach (ListBoxItem item in lstConversations.Items)
+            foreach (MessageList item in lstConversations.Items)
             {
                 if (item.Tag.ToString() == conversationId)
                 {
@@ -282,25 +272,20 @@ namespace messagingApp
                 }
             }
 
-            // Mesajları güncelle
             LoadMessages(conversationId);
         }
 
-
         private void UpdateRecipientConversation(string conversationId)
         {
-            // Konuşmadaki diğer kullanıcıyı bul
             string otherUserId = GetOtherUserId(conversationId);
             if (string.IsNullOrEmpty(otherUserId)) return;
 
-            // Diğer kullanıcının userConversations altına bu konuşmayı ekle
             string url = $"{firebaseUrl}/userConversations/{otherUserId}/{conversationId}.json";
             PutJson(url, "true");
         }
 
         private string GetOtherUserId(string conversationId)
         {
-            // Konuşmanın katılımcılarını Firebase'den al
             string url = $"{firebaseUrl}/conversations/{conversationId}.json";
             string convData = GetJson(url);
             if (string.IsNullOrEmpty(convData) || convData == "null") return null;
@@ -319,13 +304,21 @@ namespace messagingApp
 
             return null;
         }
-    
 
-
-
-        private void textBox1_TextChanged()
+        /// <summary>
+        /// Kullanıcı ID'sine göre email alır.
+        /// Artık "/users/{userId}.json" yapısı kullanılıyor.
+        /// Kayıt sırasında '.' yerine ',' kullanıldığından geri çevirmeyi unutmayın.
+        /// </summary>
+        private string GetEmailByUserId(string userId)
         {
-            //TExt box
+            string url = $"{firebaseUrl}/users/{userId}.json";
+            string json = GetJson(url);
+            if (string.IsNullOrEmpty(json) || json == "null") return "Bilinmeyen";
+
+            dynamic userObj = JsonConvert.DeserializeObject<dynamic>(json);
+            string name = (string)userObj.nickname;
+            return name;
         }
 
         private void LoadConversations()
@@ -338,7 +331,7 @@ namespace messagingApp
             if (conversations == null) return;
 
             var existingConversations = new HashSet<string>();
-            foreach (ListBoxItem item in lstConversations.Items)
+            foreach (MessageList item in lstConversations.Items)
             {
                 existingConversations.Add(item.Tag.ToString());
             }
@@ -347,7 +340,6 @@ namespace messagingApp
             {
                 string conversationId = kvp.Key;
 
-                // Eğer konuşma zaten listede varsa atla
                 if (existingConversations.Contains(conversationId)) continue;
 
                 string convUrl = $"{firebaseUrl}/conversations/{conversationId}.json";
@@ -366,45 +358,27 @@ namespace messagingApp
                 string lastMessage = convObj.lastMessage != null ? (string)convObj.lastMessage : "";
 
                 string itemText = $"{otherUserEmail} - {lastMessage}";
-//                lstConversations.Items.Add(new ListBoxItem { Text = itemText, Tag = conversationId });
-                ListBoxItem newItem = new ListBoxItem { Text = itemText, Tag = conversationId };
+                MessageList newItem = new MessageList { Text = itemText, Tag = conversationId };
                 AddToListBoxSafely(lstConversations, newItem);
             }
         }
-        private void AddToListBoxSafely(ListBox listBox, ListBoxItem item)
+
+        private void AddToListBoxSafely(ListBox listBox, MessageList item)
         {
             if (listBox.InvokeRequired)
             {
-                // Eğer farklı bir thread'den erişiliyorsa, Invoke kullanılır
                 listBox.Invoke(new Action(() => listBox.Items.Add(item)));
             }
             else
             {
-                // Eğer aynı thread'den erişiliyorsa, doğrudan işlem yapılır
                 listBox.Items.Add(item);
             }
         }
-
-
-
-
-        private string GetEmailByUserId(string userId)
-        {
-            string url = $"{firebaseUrl}/userIds/{userId}.json";
-            string json = GetJson(url);
-            if (json == null || json == "null") return "Bilinmeyen";
-
-            dynamic obj = JsonConvert.DeserializeObject<dynamic>(json);
-            string email = obj.email;
-            return email;
-        }
-
 
         private void LoadMessages(string conversationId)
         {
             lstMessages.Items.Clear();
 
-            // Mesajları Firebase'den al
             string url = $"{firebaseUrl}/messages/{conversationId}.json";
             string msgData = GetJson(url);
             if (msgData == null || msgData == "null") return;
@@ -412,7 +386,6 @@ namespace messagingApp
             var messages = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(msgData);
             if (messages == null) return;
 
-            // Her mesajı lstMessages'a ekle
             foreach (var msg in messages)
             {
                 string senderId = msg.Value.sender;
@@ -426,7 +399,6 @@ namespace messagingApp
         {
             Task.Run(() => CheckForNewMessages());
         }
-
 
         private async Task CheckForNewMessagesAsync()
         {
@@ -453,11 +425,10 @@ namespace messagingApp
 
                     long lastUpdate = convObj.lastUpdate != null ? (long)convObj.lastUpdate : 0;
 
-                    // Eğer yeni bir güncelleme varsa konuşmaları güncelle
                     if (lastUpdate > lastCheckedUpdate)
                     {
                         lastCheckedUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                        LoadConversations(); // UI'yi günceller
+                        LoadConversations();
                         break;
                     }
                 }
@@ -485,7 +456,6 @@ namespace messagingApp
             }
         }
 
-
         private void CheckForNewMessages()
         {
             string url = $"{firebaseUrl}/userConversations/{currentUserId}.json";
@@ -505,14 +475,10 @@ namespace messagingApp
                 if (convData == null || convData == "null") continue;
 
                 dynamic convObj = JsonConvert.DeserializeObject<dynamic>(convData);
-
-                // Konuşmanın son güncelleme zamanını al
                 long lastUpdate = convObj.lastUpdate != null ? (long)convObj.lastUpdate : 0;
 
-                // Eğer yeni bir güncelleme varsa
                 if (lastUpdate > lastCheckedUpdate)
                 {
-                    // lstConversations'ı güncelle
                     LoadConversations();
                     break;
                 }
@@ -554,7 +520,6 @@ namespace messagingApp
             }
         }
 
-
         private void PostJson(string url, string json)
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
@@ -586,26 +551,16 @@ namespace messagingApp
                 string result = sr.ReadToEnd();
             }
         }
-
-
-
-
-
-
-
-
     }
 
-
-    // ListBox'a özel class
-    public class ListBoxItem
+    public class MessageList
     {
         public string Text { get; set; }
         public object Tag { get; set; }
 
         public override string ToString()
         {
-            return Text; // ListBox'ın göstereceği metni döndürüyor.
+            return Text;
         }
     }
 
