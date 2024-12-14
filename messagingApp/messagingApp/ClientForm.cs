@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 
@@ -38,22 +40,22 @@ namespace messagingApp
         private async void StartListeningToMessages(string conversationId)
         {
             string url = $"{firebaseUrl}/messages/{conversationId}.json";
-            var request = (HttpWebRequest)WebRequest.Create(url);
+            var request = WebRequest.Create(url);
             request.Method = "GET";
-            request.ContentType = "application/json";
+            request.Headers.Add("Accept", "text/event-stream");
 
             try
             {
-                var response = await request.GetResponseAsync();
-                using (var sr = new StreamReader(response.GetResponseStream()))
+                using (var response = await request.GetResponseAsync())
+                using (var reader = new StreamReader(response.GetResponseStream()))
                 {
-                    while (!sr.EndOfStream)
+                    while (!reader.EndOfStream)
                     {
-                        string line = await sr.ReadLineAsync();
-                        // Yeni mesajı işle
-                        if (!string.IsNullOrEmpty(line))
+                        string line = await reader.ReadLineAsync();
+                        if (!string.IsNullOrEmpty(line) && line.StartsWith("data:"))
                         {
-                            UpdateUIWithNewMessage(line);
+                            string jsonData = line.Substring(5).Trim();
+                            UpdateUIWithNewMessage(jsonData);
                         }
                     }
                 }
@@ -63,6 +65,7 @@ namespace messagingApp
                 MessageBox.Show($"Streaming hatası: {ex.Message}");
             }
         }
+
 
         private void UpdateUIWithNewMessage(string messageJson)
         {
@@ -327,8 +330,6 @@ namespace messagingApp
 
         private void LoadConversations()
         {
-            lstConversations.Items.Clear(); // Önce mevcut item'ları temizle
-
             string url = $"{firebaseUrl}/userConversations/{currentUserId}.json";
             string convsJson = GetJson(url);
             if (convsJson == null || convsJson == "null") return;
@@ -336,23 +337,25 @@ namespace messagingApp
             var conversations = JsonConvert.DeserializeObject<Dictionary<string, bool>>(convsJson);
             if (conversations == null) return;
 
-            bool isUpdated = false;
+            var existingConversations = new HashSet<string>();
+            foreach (ListBoxItem item in lstConversations.Items)
+            {
+                existingConversations.Add(item.Tag.ToString());
+            }
 
             foreach (var kvp in conversations)
             {
                 string conversationId = kvp.Key;
+
+                // Eğer konuşma zaten listede varsa atla
+                if (existingConversations.Contains(conversationId)) continue;
+
                 string convUrl = $"{firebaseUrl}/conversations/{conversationId}.json";
                 string convData = GetJson(convUrl);
 
                 if (convData == null || convData == "null") continue;
 
                 dynamic convObj = JsonConvert.DeserializeObject<dynamic>(convData);
-
-                long lastUpdate = convObj.lastUpdate != null ? (long)convObj.lastUpdate : 0;
-
-                if (lastUpdate <= lastCheckedUpdate) continue;
-
-                isUpdated = true;
 
                 var participants = convObj.participants;
                 string otherUserId = participants[0].ToString() == currentUserId
@@ -364,11 +367,6 @@ namespace messagingApp
 
                 string itemText = $"{otherUserEmail} - {lastMessage}";
                 lstConversations.Items.Add(new ListBoxItem { Text = itemText, Tag = conversationId });
-            }
-
-            if (isUpdated)
-            {
-                lastCheckedUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             }
         }
 
@@ -409,12 +407,69 @@ namespace messagingApp
             }
         }
 
-
         private void timer1_Tick(object sender, EventArgs e)
         {
-            // Yeni mesaj veya konuşma güncellemesi kontrolü
-            CheckForNewMessages();
+            Task.Run(() => CheckForNewMessages());
         }
+
+
+        private async Task CheckForNewMessagesAsync()
+        {
+            string url = $"{firebaseUrl}/userConversations/{currentUserId}.json";
+
+            try
+            {
+                string convsJson = await GetJsonAsync(url);
+
+                if (string.IsNullOrEmpty(convsJson) || convsJson == "null") return;
+
+                var conversations = JsonConvert.DeserializeObject<Dictionary<string, bool>>(convsJson);
+                if (conversations == null) return;
+
+                foreach (var kvp in conversations)
+                {
+                    string conversationId = kvp.Key;
+                    string convUrl = $"{firebaseUrl}/conversations/{conversationId}.json";
+                    string convData = await GetJsonAsync(convUrl);
+
+                    if (string.IsNullOrEmpty(convData) || convData == "null") continue;
+
+                    dynamic convObj = JsonConvert.DeserializeObject<dynamic>(convData);
+
+                    long lastUpdate = convObj.lastUpdate != null ? (long)convObj.lastUpdate : 0;
+
+                    // Eğer yeni bir güncelleme varsa konuşmaları güncelle
+                    if (lastUpdate > lastCheckedUpdate)
+                    {
+                        lastCheckedUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                        LoadConversations(); // UI'yi günceller
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Hata: {ex.Message}");
+            }
+        }
+
+        private async Task<string> GetJsonAsync(string url)
+        {
+            using (var client = new HttpClient())
+            {
+                try
+                {
+                    var response = await client.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+                    return await response.Content.ReadAsStringAsync();
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
+
 
         private void CheckForNewMessages()
         {
@@ -532,9 +587,11 @@ namespace messagingApp
     {
         public string Text { get; set; }
         public object Tag { get; set; }
+
         public override string ToString()
         {
-            return Text;
+            return Text; // ListBox'ın göstereceği metni döndürüyor.
         }
     }
+
 }
