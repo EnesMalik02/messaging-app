@@ -73,7 +73,7 @@ namespace messagingApp
             MessageBox.Show($"Hoş geldiniz: {nickName}");
 
             // Giriş başarılı, ClientForm'a geçiş yap
-            var clientForm = new ClientForm(email, uniqueUserId);
+            var clientForm = new ClientForm(email, uniqueUserId, nickName);
             clientForm.Show();
             this.Hide();
         }

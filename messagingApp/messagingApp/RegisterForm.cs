@@ -51,6 +51,9 @@ namespace messagingApp
             {
                 MessageBox.Show("Kayıt başarıyla tamamlandı. Giriş yapabilirsiniz.");
                 this.Close(); // Formu kapat
+                var clientForm = new LoginForm();
+                clientForm.Show();
+
             }
             else
             {

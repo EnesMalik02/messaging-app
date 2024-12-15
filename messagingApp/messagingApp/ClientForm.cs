@@ -19,12 +19,13 @@ namespace messagingApp
         // Kendi Firebase URL'nizi buraya yazın
         private string firebaseUrl = "https://messaging-app-11f5f-default-rtdb.europe-west1.firebasedatabase.app";
 
-        public ClientForm(string email, string userId)
+        public ClientForm(string email, string userId, string userName)
         {
             InitializeComponent();
             currentUserEmail = email;
             currentUserId = userId;
             selfID.Text = $"ID : {userId}";
+            selfName.Text = userName;
         }
 
         private void ClientForm_Load(object sender, EventArgs e)

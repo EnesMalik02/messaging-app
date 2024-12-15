@@ -26,7 +26,7 @@ namespace messagingApp
             login1.Show();
             login2.Show();
 
-            // Bu noktada henüz Application.Run() ile bir form belirtilmedi.
+            //// Bu noktada henüz Application.Run() ile bir form belirtilmedi.
             // Fakat Application.Run() parametresiz çağırılırsa, açık formlar olduğu sürece döngü devam eder.
             Application.Run();
         }
