@@ -29,18 +29,13 @@ namespace messagingApp
 
         private void button1_Click(object sender, EventArgs e)
         {
-            // Giriş Butonuna tıklandığında
-            string nickName = txtNickName.Text.Trim(); // Kullanıcı adı (nickname)
-            if (string.IsNullOrEmpty(nickName))
-            {
-                MessageBox.Show("Lütfen bir kullanıcı adı girin.");
-                return;
-            }
+            string password = txtPassword.Text.Trim(); // Şifre
+            string email = txtEmail.Text.Trim();       // E-posta
 
-            string email = txtEmail.Text.Trim();
-            if (string.IsNullOrEmpty(email))
+            // Alanların doldurulup doldurulmadığını kontrol et
+            if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(email))
             {
-                MessageBox.Show("Lütfen e-posta adresinizi girin.");
+                MessageBox.Show("Lütfen tüm alanları doldurun.");
                 return;
             }
 
@@ -51,35 +46,65 @@ namespace messagingApp
                 return;
             }
 
-            // Kullanıcıyı Firebase'den çek
-            string uniqueUserId = GetUserIdByEmail(email); // Eğer kullanıcı varsa ID'yi al
-            string currentUserId;
-
+            // Kullanıcının ID'sini al
+            string uniqueUserId = GetUserIdByEmail(email);
             if (string.IsNullOrEmpty(uniqueUserId))
             {
-                // Kullanıcı yok, yeni oluştur
-                string newId = Guid.NewGuid().ToString(); // Benzersiz ID oluştur
-                bool success = CreateUserRecord(newId, email, nickName);
-                if (!success)
-                {
-                    MessageBox.Show("Kullanıcı oluşturulamadı. Daha sonra tekrar deneyin.");
-                    return;
-                }
-                currentUserId = newId;
-                MessageBox.Show("Yeni kullanıcı oluşturuldu: " + currentUserId);
-            }
-            else
-            {
-                // Kayıtlı kullanıcı
-                currentUserId = uniqueUserId;
-                MessageBox.Show("Hoş geldiniz, mevcut kullanıcı ID: " + currentUserId);
+                // Kullanıcı bulunamadı
+                MessageBox.Show("Bu e-posta adresiyle kayıtlı bir kullanıcı bulunamadı.");
+                return;
             }
 
-            // ClientForm'u aç
-            var clientForm = new ClientForm(email, currentUserId, nickName);
+            // Şifre doğruluğunu kontrol et
+            if (!IsPasswordCorrect(uniqueUserId, password))
+            {
+                MessageBox.Show("E-posta ve şifre eşleşmiyor. Lütfen tekrar deneyin.");
+                return;
+            }
+
+            // Kullanıcı giriş yapabilir, nickname alınır
+            string nickName = GetNickNameByUserId(uniqueUserId);
+            if (string.IsNullOrEmpty(nickName))
+            {
+                nickName = "Kullanıcı"; // Kullanıcı adı yoksa varsayılan isim atanır
+            }
+
+            // Hoş geldiniz mesajı ve giriş ekranına yönlendirme
+            MessageBox.Show($"Hoş geldiniz: {nickName}");
+
+            // Giriş başarılı, ClientForm'a geçiş yap
+            var clientForm = new ClientForm(email, uniqueUserId);
             clientForm.Show();
             this.Hide();
         }
+
+        private string GetNickNameByUserId(string userId)
+        {
+            string url = $"{firebaseUrl}/users/{userId}.json";
+            string userJson = GetJson(url);
+
+            if (string.IsNullOrEmpty(userJson) || userJson == "null") return null;
+
+            dynamic user = JsonConvert.DeserializeObject<dynamic>(userJson);
+            return user.nickname != null ? (string)user.nickname : null;
+        }
+
+
+
+        private bool IsPasswordCorrect(string userId, string password)
+        {
+            string url = $"{firebaseUrl}/users/{userId}.json"; // Kullanıcı detaylarını al
+            Console.WriteLine(url);
+            string userJson = GetJson(url);
+
+            if (string.IsNullOrEmpty(userJson) || userJson == "null") return false;
+
+            dynamic user = JsonConvert.DeserializeObject<dynamic>(userJson);
+            return user.password == password; // Şifreyi kontrol et
+        }
+
+
+
 
         private string GetJson(string url)
         {
@@ -104,8 +129,8 @@ namespace messagingApp
 
         private string GetUserIdByEmail(string email)
         {
-            string emailKey = email.Replace(".", ","); // Firebase'de e-posta adresindeki "." ile çalışılamaz
-            string url = $"{firebaseUrl}/users.json";
+            string emailKey = email.Replace(".", ","); // Firebase'de e-posta adresindeki "." yerine "," kullanılır
+            string url = $"{firebaseUrl}/users.json"; // Tüm kullanıcıları alır
             string json = GetJson(url);
 
             if (string.IsNullOrEmpty(json) || json == "null") return null;
@@ -119,39 +144,32 @@ namespace messagingApp
                     return user.Key; // Kullanıcının benzersiz ID'sini döndür
                 }
             }
-            return null;
+            return null; // Kullanıcı bulunamazsa
         }
 
-        private bool CreateUserRecord(string userId, string email, string nickName)
+        private bool CreateUserRecord(string userId, string email, string password)
         {
             string url = $"{firebaseUrl}/users/{userId}.json";
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "PUT";
-            request.ContentType = "application/json";
-
-            // Kullanıcı verisi (ID, e-posta ve nickname ile birlikte)
             var data = new
             {
-                email = email.Replace(".", ","), // Firebase'e uygun format
-                nickname = nickName
+                email = email.Replace(".", ","), // Firebase için format
+                pasword = password
             };
 
             string jsonData = JsonConvert.SerializeObject(data);
 
             try
             {
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.Method = "PUT";
+                request.ContentType = "application/json";
                 using (var sw = new StreamWriter(request.GetRequestStream()))
                 {
                     sw.Write(jsonData);
                 }
 
                 var response = (HttpWebResponse)request.GetResponse();
-                using (var sr = new StreamReader(response.GetResponseStream()))
-                {
-                    string result = sr.ReadToEnd();
-                    // Eğer "null" değilse başarı kabul edilebilir
-                    return true;
-                }
+                return true;
             }
             catch
             {
@@ -176,6 +194,15 @@ namespace messagingApp
         private void label1_Click(object sender, EventArgs e)
         {
             // Label 1 Click event
+        }
+
+
+        private void btnSignup_Click(object sender, EventArgs e)
+        {
+            // Kayıt ekranını aç
+            var registerForm = new RegisterForm();
+            registerForm.Show();
+            this.Hide();
         }
     }
 }

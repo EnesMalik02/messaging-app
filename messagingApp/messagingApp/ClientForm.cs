@@ -19,12 +19,11 @@ namespace messagingApp
         // Kendi Firebase URL'nizi buraya yazın
         private string firebaseUrl = "https://messaging-app-11f5f-default-rtdb.europe-west1.firebasedatabase.app";
 
-        public ClientForm(string email, string userId, string nickName)
+        public ClientForm(string email, string userId)
         {
             InitializeComponent();
             currentUserEmail = email;
             currentUserId = userId;
-            selfName.Text = nickName;
             selfID.Text = $"ID : {userId}";
         }
 
@@ -57,7 +56,8 @@ namespace messagingApp
                         if (!string.IsNullOrEmpty(line) && line.StartsWith("data:"))
                         {
                             string jsonData = line.Substring(5).Trim();
-                            UpdateUIWithNewMessage(jsonData);
+                            // conversationId bilgisini buradan UpdateUIWithNewMessage'a geçirin
+                            UpdateUIWithNewMessage(jsonData, conversationId);
                         }
                     }
                 }
@@ -68,28 +68,25 @@ namespace messagingApp
             }
         }
 
-
-        private void UpdateUIWithNewMessage(string messageJson)
+        private void UpdateUIWithNewMessage(string messageJson, string conversationId)
         {
             dynamic messageObj = JsonConvert.DeserializeObject<dynamic>(messageJson);
-
             string senderId = messageObj.sender;
             string text = messageObj.text;
 
-            string conversationId = ""; // Bu bilgi genelde endpoint yapısına göre değişebilir.
-
+            // Eğer güncellenmesi gereken konuşma şu an seçiliyse:
             if (lstConversations.SelectedItem != null)
             {
                 var selectedItem = (MessageList)lstConversations.SelectedItem;
                 if (selectedItem.Tag.ToString() == conversationId)
                 {
-                    string prefix = senderId == currentUserId ? "Ben: " : "Onlar: ";
-                    lstMessages.Items.Add(prefix + text);
+                    // lstMessages'ı yenile
+                    LoadMessages(conversationId);
                 }
             }
 
-            // Eğer yeni bir konuşma ise, tekrar konuşmaları yükleyin.
-            LoadConversations();
+            // Dilerseniz konuşmaları da güncelleyebilirsiniz
+            // LoadConversations();
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -102,9 +99,9 @@ namespace messagingApp
         /// Bu metot artık tüm kullanıcıları "/users.json" dan çekecek
         /// ve email alanı ile eşleştirme yaparak doğru userId'yi döndürecek.
         /// </summary>
-        private string GetUserIdByEmail(string email)
+        private string GetUserIdByEmail(string Email)
         {
-            string emailKey = email.Replace(".", ",");
+            string emailKey = Email;
             string url = $"{firebaseUrl}/users.json";
             string json = GetJson(url);
 
@@ -483,8 +480,32 @@ namespace messagingApp
 
                 if (lastUpdate > lastCheckedUpdate)
                 {
+                    lastCheckedUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+                    // Konuşmaları yenile
                     LoadConversations();
-                    break;
+
+                    // Eğer yeni mesaj gelen konuşma zaten seçiliyse, lstMessages'ı da yenile
+                    if (lstConversations.InvokeRequired)
+                    {
+                        lstConversations.Invoke(new Action(() =>
+                        {
+                            if (lstConversations.SelectedItem != null &&
+                                ((MessageList)lstConversations.SelectedItem).Tag.ToString() == conversationId)
+                            {
+                                LoadMessages(conversationId);
+                            }
+                        }));
+                    }
+                    else
+                    {
+                        if (lstConversations.SelectedItem != null &&
+                            ((MessageList)lstConversations.SelectedItem).Tag.ToString() == conversationId)
+                        {
+                            LoadMessages(conversationId);
+                        }
+                    }
+
                 }
             }
         }
@@ -577,6 +598,20 @@ namespace messagingApp
             {
                 MessageBox.Show("Kopyalanacak metin yok!");
             }
+        }
+
+        private void lstMessages_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnLogout_Click_Click(object sender, EventArgs e)
+        {
+            // LoginForm'a geri dön
+            this.Hide(); // Mevcut formu gizle
+            LoginForm loginForm = new LoginForm(); // LoginForm örneğini oluştur
+            loginForm.Show(); // LoginForm'u göster
+            this.Close(); // ClientForm'u tamamen kapat
         }
     }
 

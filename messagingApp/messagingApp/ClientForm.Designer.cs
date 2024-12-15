@@ -28,17 +28,17 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.lstConversations = new System.Windows.Forms.ListBox();
             this.lstMessages = new System.Windows.Forms.ListBox();
             this.txtOtherUserId = new System.Windows.Forms.TextBox();
             this.btnNewConversation = new System.Windows.Forms.Button();
             this.btnSend = new System.Windows.Forms.Button();
             this.txtMessage = new System.Windows.Forms.TextBox();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.timer1 = new System.Windows.Forms.Timer();
             this.selfName = new DevExpress.XtraEditors.LabelControl();
             this.selfID = new DevExpress.XtraEditors.LabelControl();
             this.simpleButton1 = new DevExpress.XtraEditors.SimpleButton();
+            this.btnLogout_Click = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lstConversations
@@ -57,6 +57,7 @@
             this.lstMessages.Name = "lstMessages";
             this.lstMessages.Size = new System.Drawing.Size(448, 394);
             this.lstMessages.TabIndex = 1;
+            this.lstMessages.SelectedIndexChanged += new System.EventHandler(this.lstMessages_SelectedIndexChanged);
             // 
             // txtOtherUserId
             // 
@@ -135,11 +136,22 @@
             this.simpleButton1.Text = "Kopyala ID";
             this.simpleButton1.Click += new System.EventHandler(this.simpleButton1_Click);
             // 
+            // btnLogout_Click
+            // 
+            this.btnLogout_Click.Location = new System.Drawing.Point(671, 412);
+            this.btnLogout_Click.Name = "btnLogout_Click";
+            this.btnLogout_Click.Size = new System.Drawing.Size(122, 35);
+            this.btnLogout_Click.TabIndex = 25;
+            this.btnLogout_Click.Text = "ÇIKIŞ YAP";
+            this.btnLogout_Click.UseVisualStyleBackColor = true;
+            this.btnLogout_Click.Click += new System.EventHandler(this.btnLogout_Click_Click);
+            // 
             // ClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(837, 450);
+            this.Controls.Add(this.btnLogout_Click);
             this.Controls.Add(this.simpleButton1);
             this.Controls.Add(this.selfID);
             this.Controls.Add(this.selfName);
@@ -169,5 +181,6 @@
         private DevExpress.XtraEditors.LabelControl selfName;
         private DevExpress.XtraEditors.LabelControl selfID;
         private DevExpress.XtraEditors.SimpleButton simpleButton1;
+        private System.Windows.Forms.Button btnLogout_Click;
     }
 }
