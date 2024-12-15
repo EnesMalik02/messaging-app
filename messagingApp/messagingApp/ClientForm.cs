@@ -102,7 +102,7 @@ namespace messagingApp
         /// </summary>
         private string GetUserIdByEmail(string Email)
         {
-            string emailKey = Email;
+            string emailKey = Email.Replace(".", ","); // Noktaları virgülle değiştir.
             string url = $"{firebaseUrl}/users.json";
             string json = GetJson(url);
 
@@ -121,6 +121,7 @@ namespace messagingApp
             }
             return null;
         }
+
 
         private void btnNewConversation_Click(object sender, EventArgs e)
         {
