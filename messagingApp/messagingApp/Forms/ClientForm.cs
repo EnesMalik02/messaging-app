@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DevExpress.XtraEditors;
 using Newtonsoft.Json;
 
 namespace messagingApp
@@ -30,14 +32,13 @@ namespace messagingApp
 
         private void ClientForm_Load(object sender, EventArgs e)
         {
-            // Form yüklendiğinde konuşmaları listele
             LoadConversations();
-
             // Timer ayarları
             timer1.Interval = 2000; // 2 saniyede bir yenile
             timer1.Tick += timer1_Tick;
             timer1.Start();
         }
+
 
         private async void StartListeningToMessages(string conversationId)
         {
@@ -122,7 +123,6 @@ namespace messagingApp
             return null;
         }
 
-
         private void btnNewConversation_Click(object sender, EventArgs e)
         {
             string otherUserEmail = txtOtherUserId.Text.Trim();
@@ -132,6 +132,7 @@ namespace messagingApp
                 return;
             }
 
+            // Kullanıcı ID'sini al
             string otherUserId = GetUserIdByEmail(otherUserEmail);
             if (string.IsNullOrEmpty(otherUserId))
             {
@@ -139,7 +140,7 @@ namespace messagingApp
                 return;
             }
 
-            // Mevcut konuşmayı kontrol et
+            // Sohbet kontrolü
             string existingConversationId = GetExistingConversationId(currentUserId, otherUserId);
             if (!string.IsNullOrEmpty(existingConversationId))
             {
@@ -159,13 +160,58 @@ namespace messagingApp
             string convJson = JsonConvert.SerializeObject(convData);
             PutJson($"{firebaseUrl}/conversations/{newConvId}.json", convJson);
 
-            // Gönderen ve alıcı için userConversations güncelle
+            // Kullanıcı için sohbeti güncelle
             AddConversationToUser(currentUserId, newConvId);
             AddConversationToUser(otherUserId, newConvId);
 
+            // Yeni buton oluştur
+            AddChatTile("Yeni Kullanıcı", "Henüz mesaj yok.", newConvId);
+
             MessageBox.Show("Sohbet başarıyla başlatıldı.");
-            LoadConversations();
         }
+
+        private void AddChatTile(string userName, string lastMessage, string conversationId)
+        {
+            // TileGroup oluştur
+            if (tileControlChats.Groups.Count == 0)
+            {
+                var tileGroup = new DevExpress.XtraEditors.TileGroup();
+                tileControlChats.Groups.Add(tileGroup);
+            }
+
+            // İlk TileGroup'u al
+            var tileGroupChats = tileControlChats.Groups[0];
+
+            // Yeni TileItem oluştur
+            var tileItem = new DevExpress.XtraEditors.TileItem
+            {
+                Text = $"{userName}\n{lastMessage}",
+                Tag = conversationId // Sohbet ID'sini Tag olarak ekle
+            };
+
+            // Görsel ve metin düzeni
+            tileItem.AppearanceItem.Normal.Font = new Font("Arial", 10);
+            tileItem.AppearanceItem.Normal.BackColor = Color.LightBlue;
+            tileItem.AppearanceItem.Normal.Options.UseBackColor = true;
+            tileItem.AppearanceItem.Normal.Options.UseFont = true;
+
+            // TileItem boyutu
+            tileItem.ItemSize = DevExpress.XtraEditors.TileItemSize.Wide;
+
+            // TileItem tıklama olayı
+            tileItem.ItemClick += (s, e) =>
+            {
+                string selectedConversationId = (string)((TileItem)s).Tag;
+                MessageBox.Show($"Sohbet Yükleniyor: {userName}\nSohbet ID: {selectedConversationId}");
+
+                // Mesajları yükleme metodu çağır
+                LoadMessages(selectedConversationId);
+            };
+
+            // TileItem'ı TileGroup'a ekle
+            tileGroupChats.Items.Add(tileItem);
+        }
+
 
         private void AddConversationToUser(string userId, string conversationId)
         {
@@ -206,13 +252,6 @@ namespace messagingApp
             return null;
         }
 
-        private void lstConversations_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (lstConversations.SelectedItem == null) return;
-            var selectedItem = (MessageList)lstConversations.SelectedItem;
-            string conversationId = selectedItem.Tag.ToString();
-            LoadMessages(conversationId);
-        }
 
         private void btnSend_Click(object sender, EventArgs e)
         {
@@ -260,6 +299,59 @@ namespace messagingApp
             LoadConversations();
             LoadMessages(conversationId);
         }
+
+        private void lstConversations_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lstConversations.SelectedItem == null) return;
+
+            // Eğer GridControl kullanıyorsanız:
+            var selectedItem = (MessageList)lstConversations.SelectedItem;
+
+            // Eğer ListBox kullanıyorsanız:
+            string conversationId = selectedItem.Tag.ToString();
+
+            // Mesajları yükle
+            LoadMessages(conversationId);
+        }
+
+        private void LoadMessages(string conversationId)
+        {
+            // Mesajları temizle (GridControl veya ListBox)
+            lstMessages.Items.Clear(); // Eğer GridControl kullanıyorsanız, farklı bağlama yapabilirsiniz.
+
+            // Mesajları Firebase'den al
+            string url = $"{firebaseUrl}/messages/{conversationId}.json";
+            string msgData = GetJson(url);
+            if (string.IsNullOrEmpty(msgData) || msgData == "null") return;
+
+            var messages = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(msgData);
+            if (messages == null) return;
+
+            // Mesajları bir listeye ekleyin
+            var messageList = new List<MessageItem>();
+
+            foreach (var msg in messages)
+            {
+                string senderId = msg.Value.sender;
+                string text = msg.Value.text;
+                long timestamp = msg.Value.timestamp;
+
+                messageList.Add(new MessageItem
+                {
+                    SenderName = senderId == currentUserId ? "Ben" : GetNameByUserId(senderId),
+                    Text = text,
+                    Timestamp = DateTimeOffset.FromUnixTimeSeconds(timestamp).ToString("g")
+                });
+            }
+
+
+            // Eğer ListBox kullanıyorsanız:
+            foreach (var message in messageList)
+            {
+                lstMessages.Items.Add($"{message.SenderName}: {message.Text} ({message.Timestamp})");
+            }
+        }
+
 
         private void RefreshConversationAndMessages(string conversationId)
         {
@@ -324,48 +416,6 @@ namespace messagingApp
             return name;
         }
 
-        private void LoadConversations()
-        {
-            string url = $"{firebaseUrl}/userConversations/{currentUserId}.json";
-            string convsJson = GetJson(url);
-            if (convsJson == null || convsJson == "null") return;
-
-            var conversations = JsonConvert.DeserializeObject<Dictionary<string, bool>>(convsJson);
-            if (conversations == null) return;
-
-            var existingConversations = new HashSet<string>();
-            foreach (MessageList item in lstConversations.Items)
-            {
-                existingConversations.Add(item.Tag.ToString());
-            }
-
-            foreach (var kvp in conversations)
-            {
-                string conversationId = kvp.Key;
-
-                if (existingConversations.Contains(conversationId)) continue;
-
-                string convUrl = $"{firebaseUrl}/conversations/{conversationId}.json";
-                string convData = GetJson(convUrl);
-
-                if (convData == null || convData == "null") continue;
-
-                dynamic convObj = JsonConvert.DeserializeObject<dynamic>(convData);
-
-                var participants = convObj.participants;
-                string otherUserId = participants[0].ToString() == currentUserId
-                    ? participants[1].ToString()
-                    : participants[0].ToString();
-
-                string otherUserEmail = GetNameByUserId(otherUserId);
-                string lastMessage = convObj.lastMessage != null ? (string)convObj.lastMessage : "";
-
-                string itemText = $"{otherUserEmail} - {lastMessage}";
-                MessageList newItem = new MessageList { Text = itemText, Tag = conversationId };
-                AddToListBoxSafely(lstConversations, newItem);
-            }
-        }
-
         private void AddToListBoxSafely(ListBox listBox, MessageList item)
         {
             if (listBox.InvokeRequired)
@@ -378,7 +428,36 @@ namespace messagingApp
             }
         }
 
-        private void LoadMessages(string conversationId)
+        private void LoadConversations()
+        {
+            string url = $"{firebaseUrl}/userConversations/{currentUserId}.json";
+            string convsJson = GetJson(url);
+            if (convsJson == null || convsJson == "null") return;
+
+            var conversations = JsonConvert.DeserializeObject<Dictionary<string, bool>>(convsJson);
+
+            foreach (var kvp in conversations)
+            {
+                string conversationId = kvp.Key;
+                string convUrl = $"{firebaseUrl}/conversations/{conversationId}.json";
+                string convData = GetJson(convUrl);
+
+                if (string.IsNullOrEmpty(convData) || convData == "null") continue;
+
+                dynamic convObj = JsonConvert.DeserializeObject<dynamic>(convData);
+                string otherUserId = convObj.participants[0] == currentUserId
+                    ? convObj.participants[1].ToString()
+                    : convObj.participants[0].ToString();
+
+                string userName = GetNameByUserId(otherUserId);
+                string lastMessage = convObj.lastMessage != null ? (string)convObj.lastMessage : "Henüz mesaj yok.";
+
+                AddChatTile(userName, lastMessage, conversationId);
+            }
+        }
+
+
+        private void LoadMessagesEski(string conversationId)
         {
             lstMessages.Items.Clear();
 
@@ -627,5 +706,19 @@ namespace messagingApp
             return Text;
         }
     }
+
+    public class ChatItem
+    {
+        public string Username { get; set; }
+        public string LastMessage { get; set; }
+        public string ProfilePhoto { get; set; }
+    }
+    public class MessageItem
+    {
+        public string SenderName { get; set; }
+        public string Text { get; set; }
+        public string Timestamp { get; set; }
+    }
+
 
 }

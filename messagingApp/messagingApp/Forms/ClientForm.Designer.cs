@@ -1,4 +1,7 @@
-﻿namespace messagingApp
+﻿using System.Drawing;
+using System.Windows.Forms;
+
+namespace messagingApp
 {
     partial class ClientForm
     {
@@ -28,23 +31,25 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.lstConversations = new System.Windows.Forms.ListBox();
             this.lstMessages = new System.Windows.Forms.ListBox();
             this.txtOtherUserId = new System.Windows.Forms.TextBox();
             this.btnNewConversation = new System.Windows.Forms.Button();
             this.btnSend = new System.Windows.Forms.Button();
             this.txtMessage = new System.Windows.Forms.TextBox();
-            this.timer1 = new System.Windows.Forms.Timer();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.selfName = new DevExpress.XtraEditors.LabelControl();
             this.selfID = new DevExpress.XtraEditors.LabelControl();
             this.simpleButton1 = new DevExpress.XtraEditors.SimpleButton();
             this.btnLogout_Click = new System.Windows.Forms.Button();
+            this.tileControlChats = new DevExpress.XtraEditors.TileControl();
             this.SuspendLayout();
             // 
             // lstConversations
             // 
             this.lstConversations.FormattingEnabled = true;
-            this.lstConversations.Location = new System.Drawing.Point(13, 66);
+            this.lstConversations.Location = new System.Drawing.Point(1059, 102);
             this.lstConversations.Name = "lstConversations";
             this.lstConversations.Size = new System.Drawing.Size(120, 381);
             this.lstConversations.TabIndex = 0;
@@ -107,7 +112,7 @@
             this.selfName.LineLocation = DevExpress.XtraEditors.LineLocation.Center;
             this.selfName.LineOrientation = DevExpress.XtraEditors.LabelLineOrientation.Vertical;
             this.selfName.LineStyle = System.Drawing.Drawing2D.DashStyle.DashDotDot;
-            this.selfName.Location = new System.Drawing.Point(699, 13);
+            this.selfName.Location = new System.Drawing.Point(1085, 45);
             this.selfName.Name = "selfName";
             this.selfName.Size = new System.Drawing.Size(94, 33);
             this.selfName.TabIndex = 21;
@@ -121,7 +126,7 @@
             this.selfID.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
             this.selfID.LineLocation = DevExpress.XtraEditors.LineLocation.Center;
             this.selfID.LineStyle = System.Drawing.Drawing2D.DashStyle.DashDotDot;
-            this.selfID.Location = new System.Drawing.Point(601, 52);
+            this.selfID.Location = new System.Drawing.Point(987, 84);
             this.selfID.Name = "selfID";
             this.selfID.Size = new System.Drawing.Size(224, 33);
             this.selfID.TabIndex = 22;
@@ -146,11 +151,21 @@
             this.btnLogout_Click.UseVisualStyleBackColor = true;
             this.btnLogout_Click.Click += new System.EventHandler(this.btnLogout_Click_Click);
             // 
+            // tileControlChats
+            // 
+            this.tileControlChats.Location = new System.Drawing.Point(12, 67);
+            this.tileControlChats.Name = "tileControlChats";
+            this.tileControlChats.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.tileControlChats.Size = new System.Drawing.Size(121, 435);
+            this.tileControlChats.TabIndex = 26;
+            this.tileControlChats.Text = "tileControl1";
+            // 
             // ClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(837, 450);
+            this.ClientSize = new System.Drawing.Size(1223, 514);
+            this.Controls.Add(this.tileControlChats);
             this.Controls.Add(this.btnLogout_Click);
             this.Controls.Add(this.simpleButton1);
             this.Controls.Add(this.selfID);
@@ -182,5 +197,6 @@
         private DevExpress.XtraEditors.LabelControl selfID;
         private DevExpress.XtraEditors.SimpleButton simpleButton1;
         private System.Windows.Forms.Button btnLogout_Click;
+        private DevExpress.XtraEditors.TileControl tileControlChats;
     }
 }
