@@ -16,7 +16,11 @@ namespace messagingApp
         private string currentUserEmail;
         private string currentUserId;
         private long lastCheckedUpdate = 0; // Unix zaman damgası olarak saklanır
+        private string reciverID;
         private string otherUserName;
+        private string selectedOtherUserId; // Seçilen alıcı kullanıcı ID'si
+        private string selectedConversationId;
+
 
         // Kendi Firebase URL'nizi buraya yazın
         private string firebaseUrl = "https://messaging-app-11f5f-default-rtdb.europe-west1.firebasedatabase.app";
@@ -37,6 +41,57 @@ namespace messagingApp
             timer1.Interval = 2000; // 2 saniyede bir yenile
             timer1.Tick += timer1_Tick;
             timer1.Start();
+        }
+
+        private void DeleteJson(string url)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "DELETE";
+            try
+            {
+                using (var response = (HttpWebResponse)request.GetResponse())
+                {
+                    // Silme işlemi başarılı
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Hata: {ex.Message}");
+            }
+        }
+
+
+        private void btnDeleteConversation_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(selectedConversationId))
+            {
+                MessageBox.Show("Lütfen silmek için bir sohbet seçin.");
+                return;
+            }
+
+            // Kullanıcıdan onay al
+            var result = MessageBox.Show("Bu sohbeti silmek istediğinize emin misiniz?", "Onay", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (result != DialogResult.Yes)
+            {
+                return;
+            }
+
+            // Sohbeti Firebase'den sil
+            string conversationUrl = $"{firebaseUrl}/conversations/{selectedConversationId}.json";
+            DeleteJson(conversationUrl);
+
+            // Kullanıcıların sohbet listelerinden kaldır
+            string currentUserConvUrl = $"{firebaseUrl}/userConversations/{currentUserId}/{selectedConversationId}.json";
+            DeleteJson(currentUserConvUrl);
+
+            string otherUserConvUrl = $"{firebaseUrl}/userConversations/{selectedOtherUserId}/{selectedConversationId}.json";
+            DeleteJson(otherUserConvUrl);
+
+            // Arayüzü güncelle
+            MessageBox.Show("Sohbet başarıyla silindi.");
+            selectedConversationId = null;
+            selectedOtherUserId = null;
+            LoadConversations(); // Konuşma listesini yeniden yükle
         }
 
 
@@ -165,50 +220,60 @@ namespace messagingApp
             AddConversationToUser(otherUserId, newConvId);
 
             // Yeni buton oluştur
-            AddChatTile("Yeni Kullanıcı", "Henüz mesaj yok.", newConvId);
+            AddChatTile("Yeni Kullanıcı", "Henüz mesaj yok.", newConvId, otherUserId);
 
             MessageBox.Show("Sohbet başarıyla başlatıldı.");
         }
-
-        private void AddChatTile(string userName, string lastMessage, string conversationId)
+        private void AddChatTile(string userName, string lastMessage, string conversationId, string otherUserId)
         {
-            // TileGroup oluştur
+            // Mevcut kutucuk var mı kontrol et
+            foreach (TileGroup group in tileControlChats.Groups)
+            {
+                foreach (TileItem item in group.Items)
+                {
+                    // Her TileItem'ın Tag özelliği üzerinden kontrol yap
+                    var tag = item.Tag as dynamic;
+                    if (tag != null && tag.ConversationId == conversationId)
+                    {
+                        // Kutucuk zaten varsa, güncelle
+                        item.Text = $"{userName}\n{lastMessage}";
+                        return;
+                    }
+                }
+            }
+
+            // Eğer mevcut kutucuk yoksa, yeni bir tane ekle
             if (tileControlChats.Groups.Count == 0)
             {
-                var tileGroup = new DevExpress.XtraEditors.TileGroup();
+                var tileGroup = new TileGroup();
                 tileControlChats.Groups.Add(tileGroup);
             }
 
-            // İlk TileGroup'u al
             var tileGroupChats = tileControlChats.Groups[0];
-
-            // Yeni TileItem oluştur
-            var tileItem = new DevExpress.XtraEditors.TileItem
+            var tileItem = new TileItem
             {
                 Text = $"{userName}\n{lastMessage}",
-                Tag = conversationId // Sohbet ID'sini Tag olarak ekle
+                Tag = new { ConversationId = conversationId, OtherUserId = otherUserId },
+                ItemSize = TileItemSize.Medium // Boyut küçültme
             };
 
-            // Görsel ve metin düzeni
-            tileItem.AppearanceItem.Normal.Font = new Font("Arial", 10);
+            // Yazı ve içerik boyutu
+            tileItem.AppearanceItem.Normal.Font = new Font("Arial", 8); // Daha küçük yazı boyutu
             tileItem.AppearanceItem.Normal.BackColor = Color.LightBlue;
             tileItem.AppearanceItem.Normal.Options.UseBackColor = true;
             tileItem.AppearanceItem.Normal.Options.UseFont = true;
 
-            // TileItem boyutu
-            tileItem.ItemSize = DevExpress.XtraEditors.TileItemSize.Wide;
-
-            // TileItem tıklama olayı
+            // TileItem'a tıklama olayı
             tileItem.ItemClick += (s, e) =>
             {
-                string selectedConversationId = (string)((TileItem)s).Tag;
-                MessageBox.Show($"Sohbet Yükleniyor: {userName}\nSohbet ID: {selectedConversationId}");
+                var tag = (dynamic)((TileItem)s).Tag;
+                selectedConversationId = tag.ConversationId;
+                selectedOtherUserId = tag.OtherUserId;
 
-                // Mesajları yükleme metodu çağır
+                MessageBox.Show($"Sohbet Yükleniyor:\nSohbet ID: {selectedConversationId}");
                 LoadMessages(selectedConversationId);
             };
 
-            // TileItem'ı TileGroup'a ekle
             tileGroupChats.Items.Add(tileItem);
         }
 
@@ -255,14 +320,12 @@ namespace messagingApp
 
         private void btnSend_Click(object sender, EventArgs e)
         {
-            if (lstConversations.SelectedItem == null)
+            if (string.IsNullOrEmpty(selectedOtherUserId))
             {
-                MessageBox.Show("Önce bir konuşma seçin.");
+                MessageBox.Show("Lütfen bir sohbet seçin.");
                 return;
             }
 
-            var selectedItem = (MessageList)lstConversations.SelectedItem;
-            string conversationId = selectedItem.Tag.ToString();
             string msg = txtMessage.Text.Trim();
 
             if (string.IsNullOrEmpty(msg))
@@ -271,8 +334,13 @@ namespace messagingApp
                 return;
             }
 
-            // Mesajı Firebase'e ekle
-            string url = $"{firebaseUrl}/messages/{conversationId}.json";
+            if (string.IsNullOrEmpty(selectedConversationId))
+            {
+                MessageBox.Show("Seçili bir konuşma bulunamadı. Lütfen bir sohbet seçin.");
+                return;
+            }
+
+            string url = $"{firebaseUrl}/messages/{selectedConversationId}.json";
             var msgObj = new
             {
                 sender = currentUserId,
@@ -282,8 +350,7 @@ namespace messagingApp
             string json = JsonConvert.SerializeObject(msgObj);
             PostJson(url, json);
 
-            // Konuşmayı güncelle
-            string convUrl = $"{firebaseUrl}/conversations/{conversationId}.json";
+            string convUrl = $"{firebaseUrl}/conversations/{selectedConversationId}.json";
             var convUpdate = new
             {
                 lastMessage = msg,
@@ -292,13 +359,14 @@ namespace messagingApp
             string convJson = JsonConvert.SerializeObject(convUpdate);
             PatchJson(convUrl, convJson);
 
-            // Alıcının userConversations'ını güncelle
-            UpdateRecipientConversation(conversationId);
-
             txtMessage.Clear();
-            LoadConversations();
-            LoadMessages(conversationId);
+
+            // Kutucuğu güncelle
+            AddChatTile(otherUserName, msg, selectedConversationId, selectedOtherUserId);
+
+            LoadMessages(selectedConversationId);
         }
+
 
         private void lstConversations_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -348,7 +416,7 @@ namespace messagingApp
             // Eğer ListBox kullanıyorsanız:
             foreach (var message in messageList)
             {
-                lstMessages.Items.Add($"{message.SenderName}: {message.Text} ({message.Timestamp})");
+                lstMessages.Items.Add($"{message.SenderName}: {message.Text}");
             }
         }
 
@@ -427,12 +495,11 @@ namespace messagingApp
                 listBox.Items.Add(item);
             }
         }
-
         private void LoadConversations()
         {
             string url = $"{firebaseUrl}/userConversations/{currentUserId}.json";
             string convsJson = GetJson(url);
-            if (convsJson == null || convsJson == "null") return;
+            if (string.IsNullOrEmpty(convsJson) || convsJson == "null") return;
 
             var conversations = JsonConvert.DeserializeObject<Dictionary<string, bool>>(convsJson);
 
@@ -452,7 +519,7 @@ namespace messagingApp
                 string userName = GetNameByUserId(otherUserId);
                 string lastMessage = convObj.lastMessage != null ? (string)convObj.lastMessage : "Henüz mesaj yok.";
 
-                AddChatTile(userName, lastMessage, conversationId);
+                AddChatTile(userName, lastMessage, conversationId, otherUserId);
             }
         }
 

@@ -136,9 +136,9 @@
     <Compile Include="Forms\LoginForm.Designer.cs">
       <DependentUpon>LoginForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Models\MessageList.cs" />
-    <Compile Include="Models\MessageItem.cs" />
-    <Compile Include="Models\ChatItem.cs" />
+    <Compile Include="Models\Message.cs" />
+    <Compile Include="Models\Conversation.cs" />
+    <Compile Include="Models\User.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegisterForm.cs">
@@ -147,8 +147,9 @@
     <Compile Include="RegisterForm.Designer.cs">
       <DependentUpon>RegisterForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Services\ConversationService.cs" />
     <Compile Include="Services\FirebaseService.cs" />
-    <Compile Include="Utilities\Helpers.cs" />
+    <Compile Include="Utilities\JsonHelper.cs" />
     <EmbeddedResource Include="Forms\ClientForm.resx">
       <DependentUpon>ClientForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -182,8 +183,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

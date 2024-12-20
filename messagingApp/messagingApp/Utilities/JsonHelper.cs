@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace messagingApp.Utilities
 {
-    public static class Helpers
+    public static class JsonHelper
     {
         public static void InvokeIfRequired(this Control control, Action action)
         {

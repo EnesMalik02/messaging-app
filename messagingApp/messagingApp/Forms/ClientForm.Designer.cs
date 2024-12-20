@@ -44,6 +44,7 @@ namespace messagingApp
             this.simpleButton1 = new DevExpress.XtraEditors.SimpleButton();
             this.btnLogout_Click = new System.Windows.Forms.Button();
             this.tileControlChats = new DevExpress.XtraEditors.TileControl();
+            this.btnDeleteConversation = new DevExpress.XtraEditors.SimpleButton();
             this.SuspendLayout();
             // 
             // lstConversations
@@ -58,9 +59,9 @@ namespace messagingApp
             // lstMessages
             // 
             this.lstMessages.FormattingEnabled = true;
-            this.lstMessages.Location = new System.Drawing.Point(147, 13);
+            this.lstMessages.Location = new System.Drawing.Point(183, 52);
             this.lstMessages.Name = "lstMessages";
-            this.lstMessages.Size = new System.Drawing.Size(448, 394);
+            this.lstMessages.Size = new System.Drawing.Size(412, 355);
             this.lstMessages.TabIndex = 1;
             this.lstMessages.SelectedIndexChanged += new System.EventHandler(this.lstMessages_SelectedIndexChanged);
             // 
@@ -94,9 +95,9 @@ namespace messagingApp
             // 
             // txtMessage
             // 
-            this.txtMessage.Location = new System.Drawing.Point(147, 418);
+            this.txtMessage.Location = new System.Drawing.Point(183, 418);
             this.txtMessage.Name = "txtMessage";
-            this.txtMessage.Size = new System.Drawing.Size(359, 20);
+            this.txtMessage.Size = new System.Drawing.Size(323, 20);
             this.txtMessage.TabIndex = 5;
             // 
             // timer1
@@ -156,15 +157,25 @@ namespace messagingApp
             this.tileControlChats.Location = new System.Drawing.Point(12, 67);
             this.tileControlChats.Name = "tileControlChats";
             this.tileControlChats.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tileControlChats.Size = new System.Drawing.Size(121, 435);
+            this.tileControlChats.Size = new System.Drawing.Size(165, 435);
             this.tileControlChats.TabIndex = 26;
             this.tileControlChats.Text = "tileControl1";
+            // 
+            // btnDeleteConversation
+            // 
+            this.btnDeleteConversation.Location = new System.Drawing.Point(474, 22);
+            this.btnDeleteConversation.Name = "btnDeleteConversation";
+            this.btnDeleteConversation.Size = new System.Drawing.Size(121, 24);
+            this.btnDeleteConversation.TabIndex = 27;
+            this.btnDeleteConversation.Text = "simpleButton2";
+            this.btnDeleteConversation.Click += new System.EventHandler(this.btnDeleteConversation_Click);
             // 
             // ClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1223, 514);
+            this.Controls.Add(this.btnDeleteConversation);
             this.Controls.Add(this.tileControlChats);
             this.Controls.Add(this.btnLogout_Click);
             this.Controls.Add(this.simpleButton1);
@@ -177,6 +188,7 @@ namespace messagingApp
             this.Controls.Add(this.lstMessages);
             this.Controls.Add(this.lstConversations);
             this.Name = "ClientForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ClientForm";
             this.Load += new System.EventHandler(this.ClientForm_Load);
             this.ResumeLayout(false);
@@ -198,5 +210,6 @@ namespace messagingApp
         private DevExpress.XtraEditors.SimpleButton simpleButton1;
         private System.Windows.Forms.Button btnLogout_Click;
         private DevExpress.XtraEditors.TileControl tileControlChats;
+        private DevExpress.XtraEditors.SimpleButton btnDeleteConversation;
     }
 }

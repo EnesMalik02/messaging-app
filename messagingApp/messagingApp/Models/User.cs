@@ -1,6 +1,6 @@
 ﻿namespace messagingApp.Models
 {
-    public class ChatItem
+    public class User
     {
         public string Username { get; set; }
         public string LastMessage { get; set; }
