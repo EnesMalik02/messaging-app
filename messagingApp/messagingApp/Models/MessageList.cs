@@ -1,6 +1,6 @@
 ﻿namespace messagingApp.Models
 {
-    public class Message
+    public class MessageList
     {
         public string Text { get; set; }
         public object Tag { get; set; }

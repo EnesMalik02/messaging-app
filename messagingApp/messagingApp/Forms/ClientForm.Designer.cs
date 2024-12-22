@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace messagingApp
+namespace messagingApp.Forms
 {
     partial class ClientForm
     {
@@ -54,7 +54,7 @@ namespace messagingApp
             this.lstConversations.Name = "lstConversations";
             this.lstConversations.Size = new System.Drawing.Size(120, 381);
             this.lstConversations.TabIndex = 0;
-            this.lstConversations.SelectedIndexChanged += new System.EventHandler(this.lstConversations_SelectedIndexChanged);
+            //this.lstConversations.SelectedIndexChanged += new System.EventHandler(this.lstConversations_SelectedIndexChanged);
             // 
             // lstMessages
             // 
