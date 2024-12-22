@@ -37,11 +37,11 @@ namespace messagingApp
         private void ClientForm_Load(object sender, EventArgs e)
         {
             LoadConversations();
-            // Timer ayarları
-            timer1.Interval = 2000; // 2 saniyede bir yenile
-            timer1.Tick += timer1_Tick;
+            timer1.Interval = 1000; // Her saniyede bir kontrol
+            timer1.Tick += (s, args) => CheckForNewMessages();
             timer1.Start();
         }
+
 
         private void DeleteJson(string url)
         {
@@ -320,26 +320,20 @@ namespace messagingApp
 
         private void btnSend_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(selectedOtherUserId))
+            if (string.IsNullOrEmpty(selectedOtherUserId) || string.IsNullOrEmpty(selectedConversationId))
             {
                 MessageBox.Show("Lütfen bir sohbet seçin.");
                 return;
             }
 
             string msg = txtMessage.Text.Trim();
-
             if (string.IsNullOrEmpty(msg))
             {
                 MessageBox.Show("Lütfen bir mesaj yazın.");
                 return;
             }
 
-            if (string.IsNullOrEmpty(selectedConversationId))
-            {
-                MessageBox.Show("Seçili bir konuşma bulunamadı. Lütfen bir sohbet seçin.");
-                return;
-            }
-
+            // 1) Mesajı Firebase'e gönder
             string url = $"{firebaseUrl}/messages/{selectedConversationId}.json";
             var msgObj = new
             {
@@ -350,20 +344,25 @@ namespace messagingApp
             string json = JsonConvert.SerializeObject(msgObj);
             PostJson(url, json);
 
-            string convUrl = $"{firebaseUrl}/conversations/{selectedConversationId}.json";
-            var convUpdate = new
+            // 2) Gönderilen mesajı son mesaj olarak conversations içinde güncelle
+            var conversationUpdate = new
             {
                 lastMessage = msg,
                 lastUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
             };
-            string convJson = JsonConvert.SerializeObject(convUpdate);
-            PatchJson(convUrl, convJson);
+            // Patch veya Put ile güncelleyebilirsiniz, Patch genelde daha uygun
+            string convUrl = $"{firebaseUrl}/conversations/{selectedConversationId}.json";
+            PatchJson(convUrl, JsonConvert.SerializeObject(conversationUpdate));
 
+            // 3) Mesaj gönderildikten sonra textbox'ı temizle
             txtMessage.Clear();
 
-            // Kutucuğu güncelle
-            AddChatTile(otherUserName, msg, selectedConversationId, selectedOtherUserId);
+            // 4) Diğer kullanıcıyı bilgilendirmek için userUpdates'i güncelle
+            string triggerUrl = $"{firebaseUrl}/userUpdates/{selectedOtherUserId}.json";
+            PutJson(triggerUrl, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
 
+            // 5) Kendi arayüzümü de güncellemek istersek (opsiyonel)
+            LoadConversations();
             LoadMessages(selectedConversationId);
         }
 
@@ -384,39 +383,32 @@ namespace messagingApp
 
         private void LoadMessages(string conversationId)
         {
-            // Mesajları temizle (GridControl veya ListBox)
-            lstMessages.Items.Clear(); // Eğer GridControl kullanıyorsanız, farklı bağlama yapabilirsiniz.
+            // 1) Eğer başka bir thread’deysek, bu metodu “UI thread” içinde çağır.
+            if (lstMessages.InvokeRequired)
+            {
+                // 2) Invoke ile tekrar kendini UI thread’inde çağır
+                lstMessages.Invoke(new Action(() => LoadMessages(conversationId)));
+                return;
+            }
 
-            // Mesajları Firebase'den al
+            // Artık UI thread’inde olduğumuz garanti, güvenle lstMessages’ı güncelleyebiliriz.
+            lstMessages.Items.Clear();
+
             string url = $"{firebaseUrl}/messages/{conversationId}.json";
             string msgData = GetJson(url);
+
             if (string.IsNullOrEmpty(msgData) || msgData == "null") return;
 
             var messages = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(msgData);
             if (messages == null) return;
 
-            // Mesajları bir listeye ekleyin
-            var messageList = new List<MessageItem>();
-
             foreach (var msg in messages)
             {
                 string senderId = msg.Value.sender;
                 string text = msg.Value.text;
-                long timestamp = msg.Value.timestamp;
 
-                messageList.Add(new MessageItem
-                {
-                    SenderName = senderId == currentUserId ? "Ben" : GetNameByUserId(senderId),
-                    Text = text,
-                    Timestamp = DateTimeOffset.FromUnixTimeSeconds(timestamp).ToString("g")
-                });
-            }
-
-
-            // Eğer ListBox kullanıyorsanız:
-            foreach (var message in messageList)
-            {
-                lstMessages.Items.Add($"{message.SenderName}: {message.Text}");
+                string senderName = senderId == currentUserId ? "Ben" : GetNameByUserId(senderId);
+                lstMessages.Items.Add($"{senderName}: {text}");
             }
         }
 
@@ -549,45 +541,6 @@ namespace messagingApp
             Task.Run(() => CheckForNewMessages());
         }
 
-        private async Task CheckForNewMessagesAsync()
-        {
-            string url = $"{firebaseUrl}/userConversations/{currentUserId}.json";
-
-            try
-            {
-                string convsJson = await GetJsonAsync(url);
-
-                if (string.IsNullOrEmpty(convsJson) || convsJson == "null") return;
-
-                var conversations = JsonConvert.DeserializeObject<Dictionary<string, bool>>(convsJson);
-                if (conversations == null) return;
-
-                foreach (var kvp in conversations)
-                {
-                    string conversationId = kvp.Key;
-                    string convUrl = $"{firebaseUrl}/conversations/{conversationId}.json";
-                    string convData = await GetJsonAsync(convUrl);
-
-                    if (string.IsNullOrEmpty(convData) || convData == "null") continue;
-
-                    dynamic convObj = JsonConvert.DeserializeObject<dynamic>(convData);
-
-                    long lastUpdate = convObj.lastUpdate != null ? (long)convObj.lastUpdate : 0;
-
-                    if (lastUpdate > lastCheckedUpdate)
-                    {
-                        lastCheckedUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                        LoadConversations();
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Hata: {ex.Message}");
-            }
-        }
-
         private async Task<string> GetJsonAsync(string url)
         {
             using (var client = new HttpClient())
@@ -607,53 +560,25 @@ namespace messagingApp
 
         private void CheckForNewMessages()
         {
-            string url = $"{firebaseUrl}/userConversations/{currentUserId}.json";
-            string convsJson = GetJson(url);
+            string triggerUrl = $"{firebaseUrl}/userUpdates/{currentUserId}.json";
+            string triggerData = GetJson(triggerUrl);
 
-            if (convsJson == null || convsJson == "null") return;
-
-            var conversations = JsonConvert.DeserializeObject<Dictionary<string, bool>>(convsJson);
-            if (conversations == null) return;
-
-            foreach (var kvp in conversations)
+            if (!string.IsNullOrEmpty(triggerData) && triggerData != "null")
             {
-                string conversationId = kvp.Key;
-                string convUrl = $"{firebaseUrl}/conversations/{conversationId}.json";
-                string convData = GetJson(convUrl);
+                long triggerTime = long.Parse(triggerData);
 
-                if (convData == null || convData == "null") continue;
-
-                dynamic convObj = JsonConvert.DeserializeObject<dynamic>(convData);
-                long lastUpdate = convObj.lastUpdate != null ? (long)convObj.lastUpdate : 0;
-
-                if (lastUpdate > lastCheckedUpdate)
+                if (triggerTime > lastCheckedUpdate)
                 {
-                    lastCheckedUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                    lastCheckedUpdate = triggerTime;
 
-                    // Konuşmaları yenile
+                    // 1) Tüm sohbet listesini (Tile'ları) yenile, böylece lastMessage güncellenir
                     LoadConversations();
 
-                    // Eğer yeni mesaj gelen konuşma zaten seçiliyse, lstMessages'ı da yenile
-                    if (lstConversations.InvokeRequired)
+                    // 2) Şu an seçili bir konuşma varsa o mesaj listesini de yenile
+                    if (!string.IsNullOrEmpty(selectedConversationId))
                     {
-                        lstConversations.Invoke(new Action(() =>
-                        {
-                            if (lstConversations.SelectedItem != null &&
-                                ((MessageList)lstConversations.SelectedItem).Tag.ToString() == conversationId)
-                            {
-                                LoadMessages(conversationId);
-                            }
-                        }));
+                        LoadMessages(selectedConversationId);
                     }
-                    else
-                    {
-                        if (lstConversations.SelectedItem != null &&
-                            ((MessageList)lstConversations.SelectedItem).Tag.ToString() == conversationId)
-                        {
-                            LoadMessages(conversationId);
-                        }
-                    }
-
                 }
             }
         }
