@@ -31,8 +31,6 @@ namespace main
         /// </summary>
         private void InitializeComponent()
         {
-            DevExpress.XtraEditors.TileItemElement tileItemElement1 = new DevExpress.XtraEditors.TileItemElement();
-            DevExpress.XtraEditors.TileItemElement tileItemElement2 = new DevExpress.XtraEditors.TileItemElement();
             this.splitContainerControl1 = new DevExpress.XtraEditors.SplitContainerControl();
             this.btnNewConversation = new DevExpress.XtraEditors.SimpleButton();
             this.txtOtherUserId = new System.Windows.Forms.TextBox();
@@ -47,8 +45,6 @@ namespace main
             this.btnLogout_Click = new DevExpress.XtraEditors.SimpleButton();
             this.simpleButton1 = new DevExpress.XtraEditors.SimpleButton();
             this.tileGroup1 = new DevExpress.XtraEditors.TileGroup();
-            this.tileItem1 = new DevExpress.XtraEditors.TileItem();
-            this.tileItem2 = new DevExpress.XtraEditors.TileItem();
             this.behaviorManager1 = new DevExpress.Utils.Behaviors.BehaviorManager();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerControl1)).BeginInit();
             this.splitContainerControl1.SuspendLayout();
@@ -75,7 +71,7 @@ namespace main
             this.splitContainerControl1.Panel2.Controls.Add(this.txtMessage);
             this.splitContainerControl1.Panel2.Controls.Add(this.panelControl1);
             this.splitContainerControl1.Panel2.Text = "Panel2";
-            this.splitContainerControl1.Size = new System.Drawing.Size(1080, 625);
+            this.splitContainerControl1.Size = new System.Drawing.Size(1152, 625);
             this.splitContainerControl1.SplitterPosition = 166;
             this.splitContainerControl1.TabIndex = 0;
             this.splitContainerControl1.Text = "splitContainerControl1";
@@ -98,8 +94,9 @@ namespace main
             // 
             // tileControlChats
             // 
-            this.tileControlChats.AccessibleRole = System.Windows.Forms.AccessibleRole.OutlineItem;
+            this.tileControlChats.AccessibleRole = System.Windows.Forms.AccessibleRole.PageTabList;
             this.tileControlChats.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.Flat;
+            this.tileControlChats.CausesValidation = false;
             this.tileControlChats.Groups.Add(this.tileGroup1);
             this.tileControlChats.HorizontalContentAlignment = DevExpress.Utils.HorzAlignment.Center;
             this.tileControlChats.IndentBetweenItems = 5;
@@ -119,7 +116,7 @@ namespace main
             // selfName
             // 
             this.selfName.AutoSize = true;
-            this.selfName.Location = new System.Drawing.Point(796, 41);
+            this.selfName.Location = new System.Drawing.Point(796, 51);
             this.selfName.Name = "selfName";
             this.selfName.Size = new System.Drawing.Size(51, 13);
             this.selfName.TabIndex = 4;
@@ -128,7 +125,7 @@ namespace main
             // selfID
             // 
             this.selfID.AutoSize = true;
-            this.selfID.Location = new System.Drawing.Point(796, 80);
+            this.selfID.Location = new System.Drawing.Point(796, 79);
             this.selfID.Name = "selfID";
             this.selfID.Size = new System.Drawing.Size(35, 13);
             this.selfID.TabIndex = 3;
@@ -155,7 +152,7 @@ namespace main
             this.panelControl1.Controls.Add(this.lstMessages);
             this.panelControl1.Location = new System.Drawing.Point(1, 70);
             this.panelControl1.Name = "panelControl1";
-            this.panelControl1.Size = new System.Drawing.Size(726, 511);
+            this.panelControl1.Size = new System.Drawing.Size(725, 511);
             this.panelControl1.TabIndex = 0;
             this.panelControl1.Paint += new System.Windows.Forms.PaintEventHandler(this.panelControl1_Paint);
             // 
@@ -183,7 +180,7 @@ namespace main
             // 
             // simpleButton1
             // 
-            this.simpleButton1.Location = new System.Drawing.Point(767, 135);
+            this.simpleButton1.Location = new System.Drawing.Point(799, 131);
             this.simpleButton1.Name = "simpleButton1";
             this.simpleButton1.Size = new System.Drawing.Size(107, 64);
             this.simpleButton1.TabIndex = 6;
@@ -192,34 +189,14 @@ namespace main
             // 
             // tileGroup1
             // 
-            this.tileGroup1.Items.Add(this.tileItem1);
-            this.tileGroup1.Items.Add(this.tileItem2);
             this.tileGroup1.Name = "tileGroup1";
             this.tileGroup1.Text = "Sohbetler";
-            // 
-            // tileItem1
-            // 
-            tileItemElement1.Text = "tileItem1";
-            tileItemElement1.TextAlignment = DevExpress.XtraEditors.TileItemContentAlignment.MiddleCenter;
-            this.tileItem1.Elements.Add(tileItemElement1);
-            this.tileItem1.Id = 21;
-            this.tileItem1.ItemSize = DevExpress.XtraEditors.TileItemSize.Small;
-            this.tileItem1.Name = "tileItem1";
-            // 
-            // tileItem2
-            // 
-            this.tileItem2.AllowSelectAnimation = false;
-            tileItemElement2.Text = "tileItem2";
-            this.tileItem2.Elements.Add(tileItemElement2);
-            this.tileItem2.Id = 22;
-            this.tileItem2.ItemSize = DevExpress.XtraEditors.TileItemSize.Small;
-            this.tileItem2.Name = "tileItem2";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1080, 625);
+            this.ClientSize = new System.Drawing.Size(1152, 625);
             this.Controls.Add(this.splitContainerControl1);
             this.Name = "Form1";
             this.Text = "Form1";
@@ -250,8 +227,6 @@ namespace main
         private DevExpress.XtraEditors.SimpleButton simpleButton1;
         private DevExpress.XtraEditors.TileControl tileControlChats;
         private DevExpress.XtraEditors.TileGroup tileGroup1;
-        private DevExpress.XtraEditors.TileItem tileItem1;
-        private DevExpress.XtraEditors.TileItem tileItem2;
         private DevExpress.Utils.Behaviors.BehaviorManager behaviorManager1;
     }
 }

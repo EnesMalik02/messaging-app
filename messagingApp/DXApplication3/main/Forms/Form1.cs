@@ -23,6 +23,7 @@ namespace main
 
         public Form1(string email, string userId, string userName)
         {
+
             InitializeComponent();
 
             currentUserEmail = email;
@@ -37,6 +38,7 @@ namespace main
             // ConversationService örneği
             _conversationService = new ConversationService(_firebaseManager);
         }
+
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -112,11 +114,14 @@ namespace main
             // Kullanıcılar altına ekle
             _conversationService.AddConversationToUser(currentUserId, newConvId);
             _conversationService.AddConversationToUser(otherUserId, newConvId);
+            string otherUserName = GetNameByUserId(otherUserId);
 
-            AddChatTile("Yeni Kullanıcı", "Henüz mesaj yok.", newConvId, otherUserId);
+            AddChatTile(otherUserName, "Henüz mesaj yok.", newConvId, otherUserId);
 
             MessageBox.Show("Sohbet başarıyla başlatıldı.");
         }
+
+
 
         private void btnSend_Click(object sender, EventArgs e)
         {
@@ -206,36 +211,60 @@ namespace main
 
         private void AddChatTile(string userName, string lastMessage, string conversationId, string otherUserId)
         {
-            //Tek bir TileGroup olduğunu varsayıyoruz
+            // Eğer hiç grup yoksa, bir tane ekleyelim
             if (tileControlChats.Groups.Count == 0)
             {
-               tileControlChats.Groups.Add(new TileGroup());
+                tileControlChats.Groups.Add(new TileGroup());
             }
             var tileGroupChats = tileControlChats.Groups[0];
 
+            // Mevcut TileItem oluştur
             var tileItem = new TileItem
             {
-               Text = $"{userName}\n{lastMessage}",
-               Tag = new { ConversationId = conversationId, OtherUserId = otherUserId },
-               ItemSize = TileItemSize.Medium
-
+                // Metin yerine 2 ayrı element kullanacağız
+                Tag = new { ConversationId = conversationId, OtherUserId = otherUserId },
+                ItemSize = TileItemSize.Medium
             };
 
-            tileItem.AppearanceItem.Normal.Font = new Font("Arial", 8);
+            // --- 1) Başlık (örnek: userName) ---
+            TileItemElement titleElement = new TileItemElement
+            {
+                Text = userName,
+                TextAlignment = TileItemContentAlignment.TopLeft
+            };
+            // Font & renk ayarları
+            titleElement.Appearance.Normal.Font = new Font("Tahoma", 10, FontStyle.Bold);
+            titleElement.Appearance.Normal.ForeColor = Color.Black;
+
+            // --- 2) Alt Bilgi (örnek: lastMessage) ---
+            TileItemElement subtitleElement = new TileItemElement
+            {
+                Text = lastMessage,
+                TextAlignment = TileItemContentAlignment.BottomLeft
+            };
+            subtitleElement.Appearance.Normal.Font = new Font("Tahoma", 8, FontStyle.Regular);
+            subtitleElement.Appearance.Normal.ForeColor = Color.Black;
+
+            // Elemanları tileItem’a ekle
+            tileItem.Elements.Add(titleElement);
+            tileItem.Elements.Add(subtitleElement);
+
+            // Arka plan rengi
             tileItem.AppearanceItem.Normal.BackColor = Color.LightBlue;
             tileItem.AppearanceItem.Normal.Options.UseBackColor = true;
-            tileItem.AppearanceItem.Normal.Options.UseFont = true;
 
+            // Buton (tile) tıklandığında yapacağımız işlemler
             tileItem.ItemClick += (s, e) =>
             {
-               var tag = (dynamic)((TileItem)s).Tag;
-               selectedConversationId = tag.ConversationId;
-               selectedOtherUserId = tag.OtherUserId;
+                var tag = (dynamic)((TileItem)s).Tag;
+                selectedConversationId = tag.ConversationId;
+                selectedOtherUserId = tag.OtherUserId;
 
-               //MessageBox.Show($"Sohbet Yükleniyor:\nSohbet ID: {selectedConversationId}");
-               LoadMessages(selectedConversationId);
+                // Tıklanınca mesajları yükle
+                LoadMessages(selectedConversationId);
             };
 
+            // Son olarak tileGroup içine ekleyelim
             tileGroupChats.Items.Add(tileItem);
         }
 
