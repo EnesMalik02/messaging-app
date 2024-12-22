@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace messagingApp.Services
+namespace main.Services
 {
     public class FirebaseManager
     {

@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace messagingApp.Services
+namespace main.Services
 {
     public class ConversationService
     {

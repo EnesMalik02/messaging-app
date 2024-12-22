@@ -11,9 +11,14 @@ namespace main
 {
     public partial class Form1 : DevExpress.XtraEditors.XtraForm
     {
-        public Form1()
+        public Form1(string email, string userId, string userName)
         {
             InitializeComponent();
+        }
+
+        private void panelControl1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
