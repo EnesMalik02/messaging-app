@@ -36,6 +36,11 @@ namespace main
             this.btnNewConversation = new DevExpress.XtraEditors.SimpleButton();
             this.txtOtherUserId = new System.Windows.Forms.TextBox();
             this.tileControlChats = new DevExpress.XtraEditors.TileControl();
+            this.chatSettings = new DevExpress.XtraEditors.SimpleButton();
+            this.panelControl2 = new DevExpress.XtraEditors.PanelControl();
+            this.simpleButton1 = new DevExpress.XtraEditors.SimpleButton();
+            this.selfID = new System.Windows.Forms.Label();
+            this.selfName = new System.Windows.Forms.Label();
             this.btnLogout_Click = new DevExpress.XtraEditors.SimpleButton();
             this.btnSend = new DevExpress.XtraEditors.SimpleButton();
             this.txtMessage = new DevExpress.XtraEditors.TextEdit();
@@ -44,19 +49,14 @@ namespace main
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.behaviorManager1 = new DevExpress.Utils.Behaviors.BehaviorManager(this.components);
             this.tileGroup1 = new DevExpress.XtraEditors.TileGroup();
-            this.selfName = new System.Windows.Forms.Label();
-            this.selfID = new System.Windows.Forms.Label();
-            this.simpleButton1 = new DevExpress.XtraEditors.SimpleButton();
-            this.panelControl2 = new DevExpress.XtraEditors.PanelControl();
-            this.chatSettings = new DevExpress.XtraEditors.SimpleButton();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerControl1)).BeginInit();
             this.splitContainerControl1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.panelControl2)).BeginInit();
+            this.panelControl2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.txtMessage.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.panelControl1)).BeginInit();
             this.panelControl1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.behaviorManager1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.panelControl2)).BeginInit();
-            this.panelControl2.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainerControl1
@@ -116,6 +116,56 @@ namespace main
             this.tileControlChats.Text = "tileControl1";
             this.tileControlChats.Click += new System.EventHandler(this.tileControlChats_Click);
             // 
+            // chatSettings
+            // 
+            this.chatSettings.Location = new System.Drawing.Point(1, 12);
+            this.chatSettings.Name = "chatSettings";
+            this.chatSettings.Size = new System.Drawing.Size(614, 47);
+            this.chatSettings.TabIndex = 8;
+            this.chatSettings.Text = "Sohbet Ayarları";
+            this.chatSettings.Click += new System.EventHandler(this.chatSettings_Click);
+            // 
+            // panelControl2
+            // 
+            this.panelControl2.Controls.Add(this.simpleButton1);
+            this.panelControl2.Controls.Add(this.selfID);
+            this.panelControl2.Controls.Add(this.selfName);
+            this.panelControl2.Location = new System.Drawing.Point(621, 12);
+            this.panelControl2.Name = "panelControl2";
+            this.panelControl2.Size = new System.Drawing.Size(280, 107);
+            this.panelControl2.TabIndex = 7;
+            // 
+            // simpleButton1
+            // 
+            this.simpleButton1.Location = new System.Drawing.Point(93, 77);
+            this.simpleButton1.Name = "simpleButton1";
+            this.simpleButton1.Size = new System.Drawing.Size(107, 25);
+            this.simpleButton1.TabIndex = 6;
+            this.simpleButton1.Text = "ID Kopyala";
+            this.simpleButton1.Click += new System.EventHandler(this.simpleButton1_Click_1);
+            // 
+            // selfID
+            // 
+            this.selfID.AutoSize = true;
+            this.selfID.Location = new System.Drawing.Point(35, 34);
+            this.selfID.Name = "selfID";
+            this.selfID.Size = new System.Drawing.Size(226, 13);
+            this.selfID.TabIndex = 3;
+            this.selfID.Text = "ID : 1757ac79-d72c-4afd-a5fa-fad66bef1289";
+            this.selfID.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.selfID.Click += new System.EventHandler(this.selfID_Click);
+            // 
+            // selfName
+            // 
+            this.selfName.AutoSize = true;
+            this.selfName.Location = new System.Drawing.Point(115, 8);
+            this.selfName.Name = "selfName";
+            this.selfName.Size = new System.Drawing.Size(51, 13);
+            this.selfName.TabIndex = 4;
+            this.selfName.Text = "selfName";
+            this.selfName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.selfName.Click += new System.EventHandler(this.selfName_Click_1);
+            // 
             // btnLogout_Click
             // 
             this.btnLogout_Click.Location = new System.Drawing.Point(817, 593);
@@ -168,56 +218,6 @@ namespace main
             this.tileGroup1.Name = "tileGroup1";
             this.tileGroup1.Text = "Sohbetler";
             // 
-            // selfName
-            // 
-            this.selfName.AutoSize = true;
-            this.selfName.Location = new System.Drawing.Point(115, 8);
-            this.selfName.Name = "selfName";
-            this.selfName.Size = new System.Drawing.Size(51, 13);
-            this.selfName.TabIndex = 4;
-            this.selfName.Text = "selfName";
-            this.selfName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.selfName.Click += new System.EventHandler(this.selfName_Click_1);
-            // 
-            // selfID
-            // 
-            this.selfID.AutoSize = true;
-            this.selfID.Location = new System.Drawing.Point(35, 34);
-            this.selfID.Name = "selfID";
-            this.selfID.Size = new System.Drawing.Size(226, 13);
-            this.selfID.TabIndex = 3;
-            this.selfID.Text = "ID : 1757ac79-d72c-4afd-a5fa-fad66bef1289";
-            this.selfID.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.selfID.Click += new System.EventHandler(this.selfID_Click);
-            // 
-            // simpleButton1
-            // 
-            this.simpleButton1.Location = new System.Drawing.Point(93, 77);
-            this.simpleButton1.Name = "simpleButton1";
-            this.simpleButton1.Size = new System.Drawing.Size(107, 25);
-            this.simpleButton1.TabIndex = 6;
-            this.simpleButton1.Text = "ID Kopyala";
-            this.simpleButton1.Click += new System.EventHandler(this.simpleButton1_Click_1);
-            // 
-            // panelControl2
-            // 
-            this.panelControl2.Controls.Add(this.simpleButton1);
-            this.panelControl2.Controls.Add(this.selfID);
-            this.panelControl2.Controls.Add(this.selfName);
-            this.panelControl2.Location = new System.Drawing.Point(621, 12);
-            this.panelControl2.Name = "panelControl2";
-            this.panelControl2.Size = new System.Drawing.Size(280, 107);
-            this.panelControl2.TabIndex = 7;
-            // 
-            // chatSettings
-            // 
-            this.chatSettings.Location = new System.Drawing.Point(1, 12);
-            this.chatSettings.Name = "chatSettings";
-            this.chatSettings.Size = new System.Drawing.Size(614, 47);
-            this.chatSettings.TabIndex = 8;
-            this.chatSettings.Text = "Sohbet Ayarları";
-            this.chatSettings.Click += new System.EventHandler(this.chatSettings_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -227,15 +227,16 @@ namespace main
             this.Name = "Form1";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.Shown += new System.EventHandler(this.Form1_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerControl1)).EndInit();
             this.splitContainerControl1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.panelControl2)).EndInit();
+            this.panelControl2.ResumeLayout(false);
+            this.panelControl2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.txtMessage.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.panelControl1)).EndInit();
             this.panelControl1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.behaviorManager1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.panelControl2)).EndInit();
-            this.panelControl2.ResumeLayout(false);
-            this.panelControl2.PerformLayout();
             this.ResumeLayout(false);
 
         }

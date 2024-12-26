@@ -50,6 +50,12 @@ namespace main
             timer1.Start();
         }
 
+        private void Form1_Shown(object sender, EventArgs e)
+        {
+            // Güncelleme mesajını kontrol et
+            CheckForAnnouncement();
+        }
+
         private void Timer1_Tick(object sender, EventArgs e)
         {
             CheckForNewMessages();
@@ -134,7 +140,7 @@ namespace main
                 lastMessage = "Henüz mesaj yok."
             };
 
-            _firebaseManager.PutJson($"conversations/{newConversationId}.json", JsonConvert.SerializeObject(conversationData));
+            _firebaseManager.PutJson($"conversations/{newConversationId}", JsonConvert.SerializeObject(conversationData));
 
             // 5) Her kullanıcı için konuşmayı ekle
             foreach (string userId in userIds)
@@ -524,6 +530,85 @@ namespace main
             LoadConversations();
 
             MessageBox.Show("Grup adı başarıyla değiştirildi.");
+        }
+
+        private void CheckForAnnouncement()
+        {
+            // Firebase'den duyuru bilgisini al
+            string announcementJson = _firebaseManager.GetJson("announcement.json");
+            if (string.IsNullOrEmpty(announcementJson) || announcementJson == "null")
+            {
+                Console.WriteLine("No announcement found.");
+                return;
+            }
+
+            try
+            {
+                // Duyuruyu ayrıştır
+                dynamic announcement = JsonConvert.DeserializeObject<dynamic>(announcementJson);
+                string message = announcement.message;
+                long announcementTimestamp = announcement.timestamp;
+
+                // Kullanıcı bilgilerini al ve duyuru durumunu kontrol et
+                string userJson = _firebaseManager.GetJson($"users/{currentUserId}.json");
+                if (string.IsNullOrEmpty(userJson) || userJson == "null")
+                {
+                    Console.WriteLine("User data not found.");
+                    return;
+                }
+
+                dynamic userData = JsonConvert.DeserializeObject<dynamic>(userJson);
+                long lastReadTimestamp = userData.announcementRead != null ? (long)userData.announcementRead : 0;
+
+                // Eğer duyuru yeni ise (kullanıcı daha önce görmediyse):
+                if (announcementTimestamp > lastReadTimestamp)
+                {
+                    // Kullanıcıya duyuruyu göster
+                    ShowAnnouncementForm(message);
+
+                    // Kullanıcının 'announcementRead' alanını güncelle
+                    var updateData = new { announcementRead = announcementTimestamp };
+                    _firebaseManager.PatchJson($"users/{currentUserId}.json", JsonConvert.SerializeObject(updateData));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while checking announcement: {ex.Message}");
+            }
+        }
+
+
+        private void ShowAnnouncementForm(string message)
+        {
+            Form announcementForm = new Form
+            {
+                Text = "Güncelleme Bildirimi",
+                Size = new Size(400, 200),
+                StartPosition = FormStartPosition.CenterScreen,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+
+            Label messageLabel = new Label
+            {
+                Text = message,
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font("Tahoma", 10, FontStyle.Regular)
+            };
+
+            Button okButton = new Button
+            {
+                Text = "Tamam",
+                Dock = DockStyle.Bottom,
+                Height = 40
+            };
+            okButton.Click += (s, e) => { announcementForm.Close(); };
+
+            announcementForm.Controls.Add(messageLabel);
+            announcementForm.Controls.Add(okButton);
+            announcementForm.ShowDialog();
         }
 
     }
