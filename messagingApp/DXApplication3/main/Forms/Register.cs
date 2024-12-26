@@ -90,7 +90,10 @@ namespace main.Forms
                 {
                     nickname = nickName,
                     email = email.Replace(".", ","),
-                    password = password
+                    password = password,
+                    registrationDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    announcementRead = 0 // Kullanıcı başlangıçta hiçbir duyuruyu görmedi
+
                 };
 
                 string jsonData = JsonConvert.SerializeObject(data);
@@ -152,5 +155,10 @@ namespace main.Forms
             {
                 // Form yüklendiğinde yapılacak işlemler
             }
+
+        private void Register_Load(object sender, EventArgs e)
+        {
+
         }
+    }
     }

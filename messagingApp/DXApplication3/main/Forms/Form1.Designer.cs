@@ -32,6 +32,7 @@ namespace main
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.splitContainerControl1 = new DevExpress.XtraEditors.SplitContainerControl();
             this.btnNewConversation = new DevExpress.XtraEditors.SimpleButton();
             this.txtOtherUserId = new System.Windows.Forms.TextBox();
@@ -49,6 +50,7 @@ namespace main
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.behaviorManager1 = new DevExpress.Utils.Behaviors.BehaviorManager(this.components);
             this.tileGroup1 = new DevExpress.XtraEditors.TileGroup();
+            this.updateBtn = new DevExpress.XtraEditors.SimpleButton();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerControl1)).BeginInit();
             this.splitContainerControl1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.panelControl2)).BeginInit();
@@ -68,6 +70,7 @@ namespace main
             this.splitContainerControl1.Panel1.Controls.Add(this.txtOtherUserId);
             this.splitContainerControl1.Panel1.Controls.Add(this.tileControlChats);
             this.splitContainerControl1.Panel1.Text = "Panel1";
+            this.splitContainerControl1.Panel2.Controls.Add(this.updateBtn);
             this.splitContainerControl1.Panel2.Controls.Add(this.chatSettings);
             this.splitContainerControl1.Panel2.Controls.Add(this.panelControl2);
             this.splitContainerControl1.Panel2.Controls.Add(this.btnLogout_Click);
@@ -130,7 +133,7 @@ namespace main
             this.panelControl2.Controls.Add(this.simpleButton1);
             this.panelControl2.Controls.Add(this.selfID);
             this.panelControl2.Controls.Add(this.selfName);
-            this.panelControl2.Location = new System.Drawing.Point(621, 12);
+            this.panelControl2.Location = new System.Drawing.Point(621, 41);
             this.panelControl2.Name = "panelControl2";
             this.panelControl2.Size = new System.Drawing.Size(280, 107);
             this.panelControl2.TabIndex = 7;
@@ -218,6 +221,16 @@ namespace main
             this.tileGroup1.Name = "tileGroup1";
             this.tileGroup1.Text = "Sohbetler";
             // 
+            // updateBtn
+            // 
+            this.updateBtn.ButtonStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+            this.updateBtn.ImageOptions.Image = ((System.Drawing.Image)(resources.GetObject("simpleButton2.ImageOptions.Image")));
+            this.updateBtn.Location = new System.Drawing.Point(860, 3);
+            this.updateBtn.Name = "updateBtn";
+            this.updateBtn.Size = new System.Drawing.Size(32, 30);
+            this.updateBtn.TabIndex = 9;
+            this.updateBtn.Click += new System.EventHandler(this.updateBtn_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -260,6 +273,7 @@ namespace main
         private Label selfID;
         private Label selfName;
         private DevExpress.XtraEditors.SimpleButton chatSettings;
+        private DevExpress.XtraEditors.SimpleButton updateBtn;
     }
 }
 

@@ -53,7 +53,7 @@ namespace main
         private void Form1_Shown(object sender, EventArgs e)
         {
             // Güncelleme mesajını kontrol et
-            CheckForAnnouncement();
+           // CheckForAnnouncement();
         }
 
         private void Timer1_Tick(object sender, EventArgs e)
@@ -549,7 +549,7 @@ namespace main
                 string message = announcement.message;
                 long announcementTimestamp = announcement.timestamp;
 
-                // Kullanıcı bilgilerini al ve duyuru durumunu kontrol et
+                // Kullanıcı bilgilerini al
                 string userJson = _firebaseManager.GetJson($"users/{currentUserId}.json");
                 if (string.IsNullOrEmpty(userJson) || userJson == "null")
                 {
@@ -560,15 +560,30 @@ namespace main
                 dynamic userData = JsonConvert.DeserializeObject<dynamic>(userJson);
                 long lastReadTimestamp = userData.announcementRead != null ? (long)userData.announcementRead : 0;
 
-                // Eğer duyuru yeni ise (kullanıcı daha önce görmediyse):
+                Console.WriteLine($"Current Announcement Timestamp: {announcementTimestamp}, Last Read Timestamp: {lastReadTimestamp}");
+
+                // Eğer duyuru yeni ise
                 if (announcementTimestamp > lastReadTimestamp)
                 {
                     // Kullanıcıya duyuruyu göster
                     ShowAnnouncementForm(message);
 
-                    // Kullanıcının 'announcementRead' alanını güncelle
-                    var updateData = new { announcementRead = announcementTimestamp };
-                    _firebaseManager.PatchJson($"users/{currentUserId}.json", JsonConvert.SerializeObject(updateData));
+                    try
+                    {
+                        // Firebase'de `announcementRead` alanını güncelle
+                        string patchUrl = $"users/{currentUserId}/announcementRead.json";
+                        string jsonBody = JsonConvert.SerializeObject(announcementTimestamp);
+
+                        _firebaseManager.PatchJson(patchUrl, jsonBody);
+
+                        // Güncellenen veriyi kontrol et
+                        string updatedUserJson = _firebaseManager.GetJson($"users/{currentUserId}.json");
+                        Console.WriteLine($"Updated User JSON: {updatedUserJson}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error while updating announcementRead: {ex.Message}");
+                    }
                 }
             }
             catch (Exception ex)
@@ -611,5 +626,9 @@ namespace main
             announcementForm.ShowDialog();
         }
 
+        private void updateBtn_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
