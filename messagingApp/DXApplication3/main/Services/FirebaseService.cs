@@ -38,16 +38,34 @@ namespace main.Services
 
         public void PutJson(string relativeUrl, string jsonBody)
         {
-            string url = $"{_firebaseUrl}/{relativeUrl}";
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "PUT";
-            request.ContentType = "application/json";
-            using (var sw = new StreamWriter(request.GetRequestStream()))
+            try
             {
-                sw.Write(jsonBody);
+                string url = $"{_firebaseUrl}/{relativeUrl}";
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.Method = "PUT";
+                request.ContentType = "application/json";
+
+                using (var sw = new StreamWriter(request.GetRequestStream()))
+                {
+                    sw.Write(jsonBody);
+                }
+
+                using (var response = (HttpWebResponse)request.GetResponse())
+                {
+                    Console.WriteLine($"Response: {response.StatusCode}");
+                }
             }
-            request.GetResponse().Close();
+            catch (WebException ex)
+            {
+                using (var sr = new StreamReader(ex.Response.GetResponseStream()))
+                {
+                    string responseText = sr.ReadToEnd();
+                    Console.WriteLine($"Error Response: {responseText}");
+                }
+                throw;
+            }
         }
+
 
         public void PostJson(string relativeUrl, string jsonBody)
         {

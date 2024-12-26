@@ -16,6 +16,8 @@ namespace main
         private string selectedOtherUserId;
         private string selectedConversationId;
         private long lastCheckedUpdate = 0;
+        private string firebaseUrl = "https://messaging-app-11f5f-default-rtdb.europe-west1.firebasedatabase.app";
+
 
         // Bu projede tek bir URL var diyorsanız:
         private readonly FirebaseManager _firebaseManager;
@@ -32,7 +34,6 @@ namespace main
             selfName.Text = userName;
 
             // FirebaseManager örneği
-            string firebaseUrl = "https://messaging-app-11f5f-default-rtdb.europe-west1.firebasedatabase.app";
             _firebaseManager = new FirebaseManager(firebaseUrl);
 
             // ConversationService örneği
@@ -43,10 +44,18 @@ namespace main
         private void Form1_Load(object sender, EventArgs e)
         {
             LoadConversations();
-            timer1.Interval = 1000;
-            timer1.Tick += (s, args) => CheckForNewMessages();
+
+            timer1.Interval = 1000; // 1 saniyelik aralıklarla kontrol
+            timer1.Tick += Timer1_Tick; // Timer olayını bağla
             timer1.Start();
         }
+
+        private void Timer1_Tick(object sender, EventArgs e)
+        {
+            CheckForNewMessages();
+        }
+
+
 
         private void panelControl1_Paint(object sender, PaintEventArgs e)
         {
@@ -138,30 +147,39 @@ namespace main
                 return;
             }
 
-            // 1) Mesajı gönder
-            _conversationService.SendMessage(selectedConversationId, currentUserId, msg);
+            // 1) Mesajı Firebase'e ekle
+            var msgObj = new
+            {
+                sender = currentUserId,
+                text = msg,
+                //timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            };
 
-            // 2) Mesaj kutusunu temizle
-            txtMessage.Text = string.Empty; // İçeriği temizler
+            _firebaseManager.PostJson($"messages/{selectedConversationId}.json", JsonConvert.SerializeObject(msgObj));
 
-            // 3) Karşı tarafı bilgilendirmek için
-            //long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            //_firebaseManager.PutJson($"userUpdates/{selectedOtherUserId}.json", now.ToString());
+            // 2) Conversation'ı güncelle
+            var convUpdate = new
+            {
+                lastMessage = msg,
+                //lastUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            };
 
-            // 4) Kendi arayüzünü güncelle
-            LoadConversations();
+            _firebaseManager.PatchJson($"conversations/{selectedConversationId}.json", JsonConvert.SerializeObject(convUpdate));
+
+            // 3) Mesaj kutusunu temizle
+            txtMessage.Text = string.Empty;
+
+            // 4) Diğer kullanıcı için tetikleme oluştur
+            long unixTimestamp = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
+            _firebaseManager.PutJson($"userUpdates/{selectedOtherUserId}.json", unixTimestamp.ToString());
+
+            // 5) Kendi ekranını güncelle
             LoadMessages(selectedConversationId);
         }
 
+
         private void LoadMessages(string conversationId)
         {
-            //Cross-thread safe
-            if (lstMessages.InvokeRequired)
-            {
-                lstMessages.Invoke(new Action(() => LoadMessages(conversationId)));
-                return;
-            }
-
             lstMessages.Items.Clear();
 
             var messages = _conversationService.GetMessages(conversationId);
@@ -270,22 +288,28 @@ namespace main
 
         private void CheckForNewMessages()
         {
-            // userUpdates/currentUserId
             string triggerData = _firebaseManager.GetJson($"userUpdates/{currentUserId}.json");
+
             if (!string.IsNullOrEmpty(triggerData) && triggerData != "null")
             {
                 long triggerTime = long.Parse(triggerData);
+
                 if (triggerTime > lastCheckedUpdate)
                 {
                     lastCheckedUpdate = triggerTime;
-                    LoadConversations();
+
+                    // Eğer bir konuşma seçiliyse mesajları yükle
                     if (!string.IsNullOrEmpty(selectedConversationId))
                     {
                         LoadMessages(selectedConversationId);
                     }
+
+                    // Konuşmaların listesini yenile
+                    LoadConversations();
                 }
             }
         }
+
 
         // Bu metotları da ConversationService'e taşıyabilirsiniz, fakat örnek olarak burada bıraktık
         private string GetUserIdByEmail(string Email)
