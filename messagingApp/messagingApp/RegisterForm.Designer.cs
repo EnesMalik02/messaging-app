@@ -63,7 +63,7 @@
             this.lblNickname.AutoSize = true;
             this.lblNickname.Location = new System.Drawing.Point(20, 23);
             this.lblNickname.Name = "lblNickname";
-            this.lblNickname.Size = new System.Drawing.Size(73, 13);
+            this.lblNickname.Size = new System.Drawing.Size(67, 13);
             this.lblNickname.TabIndex = 4;
             this.lblNickname.Text = "Kullanıcı Adı:";
             // 
@@ -72,7 +72,7 @@
             this.lblEmail.AutoSize = true;
             this.lblEmail.Location = new System.Drawing.Point(20, 63);
             this.lblEmail.Name = "lblEmail";
-            this.lblEmail.Size = new System.Drawing.Size(42, 13);
+            this.lblEmail.Size = new System.Drawing.Size(46, 13);
             this.lblEmail.TabIndex = 5;
             this.lblEmail.Text = "E-posta:";
             // 
@@ -98,10 +98,12 @@
             this.Controls.Add(this.txtEmail);
             this.Controls.Add(this.txtNickName);
             this.Name = "RegisterForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Kayıt Ol";
             this.Load += new System.EventHandler(this.RegisterForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         #endregion

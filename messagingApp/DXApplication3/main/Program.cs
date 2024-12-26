@@ -19,8 +19,14 @@ namespace main
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            BonusSkins.Register();
-            Application.Run(new Login());
+            Login login1 = new Login();
+            Login login2 = new Login();
+
+            login1.Show();
+            login2.Show();
+
+            Application.Run();
+
         }
     }
 }

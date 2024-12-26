@@ -199,9 +199,9 @@ namespace main
         private void btnSignup_Click(object sender, EventArgs e)
         {
             // Kayıt ekranını aç
-            //var registerForm = new RegisterForm();
-            //registerForm.Show();
-            //this.Hide();
+            var registerForm = new Forms.Register();
+            registerForm.Show();
+            this.Hide();
         }
     }
 }

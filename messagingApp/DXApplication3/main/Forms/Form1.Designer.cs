@@ -31,21 +31,22 @@ namespace main
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.splitContainerControl1 = new DevExpress.XtraEditors.SplitContainerControl();
             this.btnNewConversation = new DevExpress.XtraEditors.SimpleButton();
             this.txtOtherUserId = new System.Windows.Forms.TextBox();
             this.tileControlChats = new DevExpress.XtraEditors.TileControl();
+            this.simpleButton1 = new DevExpress.XtraEditors.SimpleButton();
+            this.btnLogout_Click = new DevExpress.XtraEditors.SimpleButton();
             this.selfName = new System.Windows.Forms.Label();
             this.selfID = new System.Windows.Forms.Label();
             this.btnSend = new DevExpress.XtraEditors.SimpleButton();
             this.txtMessage = new DevExpress.XtraEditors.TextEdit();
             this.panelControl1 = new DevExpress.XtraEditors.PanelControl();
-            this.timer1 = new System.Windows.Forms.Timer();
             this.lstMessages = new System.Windows.Forms.ListBox();
-            this.btnLogout_Click = new DevExpress.XtraEditors.SimpleButton();
-            this.simpleButton1 = new DevExpress.XtraEditors.SimpleButton();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.behaviorManager1 = new DevExpress.Utils.Behaviors.BehaviorManager(this.components);
             this.tileGroup1 = new DevExpress.XtraEditors.TileGroup();
-            this.behaviorManager1 = new DevExpress.Utils.Behaviors.BehaviorManager();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerControl1)).BeginInit();
             this.splitContainerControl1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.txtMessage.Properties)).BeginInit();
@@ -97,7 +98,6 @@ namespace main
             this.tileControlChats.AccessibleRole = System.Windows.Forms.AccessibleRole.PageTabList;
             this.tileControlChats.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.Flat;
             this.tileControlChats.CausesValidation = false;
-            this.tileControlChats.Groups.Add(this.tileGroup1);
             this.tileControlChats.HorizontalContentAlignment = DevExpress.Utils.HorzAlignment.Center;
             this.tileControlChats.IndentBetweenItems = 5;
             this.tileControlChats.ItemBorderVisibility = DevExpress.XtraEditors.TileItemBorderVisibility.Always;
@@ -113,10 +113,28 @@ namespace main
             this.tileControlChats.Text = "tileControl1";
             this.tileControlChats.Click += new System.EventHandler(this.tileControlChats_Click);
             // 
+            // simpleButton1
+            // 
+            this.simpleButton1.Location = new System.Drawing.Point(787, 117);
+            this.simpleButton1.Name = "simpleButton1";
+            this.simpleButton1.Size = new System.Drawing.Size(107, 25);
+            this.simpleButton1.TabIndex = 6;
+            this.simpleButton1.Text = "ID Kopyala";
+            this.simpleButton1.Click += new System.EventHandler(this.simpleButton1_Click_1);
+            // 
+            // btnLogout_Click
+            // 
+            this.btnLogout_Click.Location = new System.Drawing.Point(894, 592);
+            this.btnLogout_Click.Name = "btnLogout_Click";
+            this.btnLogout_Click.Size = new System.Drawing.Size(75, 23);
+            this.btnLogout_Click.TabIndex = 5;
+            this.btnLogout_Click.Text = "Çıkış Yap";
+            this.btnLogout_Click.Click += new System.EventHandler(this.btnLogout_Click_Click);
+            // 
             // selfName
             // 
             this.selfName.AutoSize = true;
-            this.selfName.Location = new System.Drawing.Point(796, 51);
+            this.selfName.Location = new System.Drawing.Point(760, 51);
             this.selfName.Name = "selfName";
             this.selfName.Size = new System.Drawing.Size(51, 13);
             this.selfName.TabIndex = 4;
@@ -125,7 +143,7 @@ namespace main
             // selfID
             // 
             this.selfID.AutoSize = true;
-            this.selfID.Location = new System.Drawing.Point(796, 79);
+            this.selfID.Location = new System.Drawing.Point(760, 80);
             this.selfID.Name = "selfID";
             this.selfID.Size = new System.Drawing.Size(35, 13);
             this.selfID.TabIndex = 3;
@@ -156,36 +174,18 @@ namespace main
             this.panelControl1.TabIndex = 0;
             this.panelControl1.Paint += new System.Windows.Forms.PaintEventHandler(this.panelControl1_Paint);
             // 
+            // lstMessages
+            // 
+            this.lstMessages.FormattingEnabled = true;
+            this.lstMessages.Location = new System.Drawing.Point(0, 0);
+            this.lstMessages.Name = "lstMessages";
+            this.lstMessages.Size = new System.Drawing.Size(725, 511);
+            this.lstMessages.TabIndex = 0;
+            // 
             // timer1
             // 
             this.timer1.Interval = 2000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
-            // lstMessages
-            // 
-            this.lstMessages.FormattingEnabled = true;
-            this.lstMessages.Location = new System.Drawing.Point(25, 19);
-            this.lstMessages.Name = "lstMessages";
-            this.lstMessages.Size = new System.Drawing.Size(519, 277);
-            this.lstMessages.TabIndex = 0;
-            // 
-            // btnLogout_Click
-            // 
-            this.btnLogout_Click.Location = new System.Drawing.Point(799, 590);
-            this.btnLogout_Click.Name = "btnLogout_Click";
-            this.btnLogout_Click.Size = new System.Drawing.Size(75, 23);
-            this.btnLogout_Click.TabIndex = 5;
-            this.btnLogout_Click.Text = "Çıkış Yap";
-            this.btnLogout_Click.Click += new System.EventHandler(this.btnLogout_Click_Click);
-            // 
-            // simpleButton1
-            // 
-            this.simpleButton1.Location = new System.Drawing.Point(799, 131);
-            this.simpleButton1.Name = "simpleButton1";
-            this.simpleButton1.Size = new System.Drawing.Size(107, 64);
-            this.simpleButton1.TabIndex = 6;
-            this.simpleButton1.Text = "ID Kopyala";
-            this.simpleButton1.Click += new System.EventHandler(this.simpleButton1_Click_1);
             // 
             // tileGroup1
             // 
@@ -226,8 +226,8 @@ namespace main
         private DevExpress.XtraEditors.SimpleButton btnLogout_Click;
         private DevExpress.XtraEditors.SimpleButton simpleButton1;
         private DevExpress.XtraEditors.TileControl tileControlChats;
-        private DevExpress.XtraEditors.TileGroup tileGroup1;
         private DevExpress.Utils.Behaviors.BehaviorManager behaviorManager1;
+        private DevExpress.XtraEditors.TileGroup tileGroup1;
     }
 }
 
