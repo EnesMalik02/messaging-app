@@ -21,9 +21,11 @@ namespace main
 
             Login login1 = new Login();
             Login login2 = new Login();
+            Login login3 = new Login();
 
             login1.Show();
             login2.Show();
+            login3.Show();
 
             Application.Run();
 

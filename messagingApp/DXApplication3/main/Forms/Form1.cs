@@ -85,56 +85,74 @@ namespace main
 
         private void btnNewConversation_Click(object sender, EventArgs e)
         {
-            string otherUserEmail = txtOtherUserId.Text.Trim();
-            if (string.IsNullOrEmpty(otherUserEmail))
+            string emailList = txtOtherUserId.Text.Trim();
+            if (string.IsNullOrEmpty(emailList))
             {
-                MessageBox.Show("Lütfen diğer kullanıcının e-posta adresini girin.");
+                MessageBox.Show("Lütfen diğer kullanıcıların e-posta adreslerini girin (virgülle ayrılmış).");
                 return;
             }
 
-            // Diğer userId'yi al (örnek: Kodunuzu ConversationService’e taşıyabilirsiniz)
-            string otherUserId = GetUserIdByEmail(otherUserEmail);
-            if (string.IsNullOrEmpty(otherUserId))
+            // 1) E-posta listesini parçalayarak kullanıcı ID'lerini al
+            string[] emails = emailList.Split(',');
+            var userIds = new List<string>();
+
+            foreach (string email in emails)
             {
-                MessageBox.Show("Bu e-posta adresine sahip bir kullanıcı bulunamadı.");
-                return;
+                string trimmedEmail = email.Trim();
+                string userId = GetUserIdByEmail(trimmedEmail);
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    MessageBox.Show($"Bu e-posta adresine sahip kullanıcı bulunamadı: {trimmedEmail}");
+                    return;
+                }
+
+                // Aynı kullanıcı birden fazla kez eklenmesin
+                if (!userIds.Contains(userId))
+                {
+                    userIds.Add(userId);
+                }
             }
 
-            // Var mı diye kontrol
-            string existingConversationId = GetExistingConversationId(currentUserId, otherUserId);
-            if (!string.IsNullOrEmpty(existingConversationId))
+            // 2) Kullanıcının kendi ID'sini ekle (çift kontrol)
+            if (!userIds.Contains(currentUserId))
             {
-                MessageBox.Show("Bu kişiyle zaten bir konuşmanız var.");
-                return;
+                userIds.Add(currentUserId);
             }
 
-            // Yeni konuşma oluştur
-            string newConvId = Guid.NewGuid().ToString();
-            var convData = new
+            // 3) Katılımcı sayısına göre birebir veya grup sohbeti
+            string newConversationId = Guid.NewGuid().ToString();
+            string conversationTitle = userIds.Count > 2
+                ? "Yeni Grup Sohbeti" // Grup sohbeti için başlık
+                : GetNameByUserId(userIds.Find(id => id != currentUserId)); // Birebir sohbette karşı kullanıcının adı
+
+            // 4) Konuşmayı Firebase'e kaydet
+            var conversationData = new
             {
-                participants = new string[] { currentUserId, otherUserId },
-                lastMessage = "",
-                //lastUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                participants = userIds,
+                title = conversationTitle,
+                lastMessage = "Henüz mesaj yok."
             };
-            string convJson = JsonConvert.SerializeObject(convData);
 
-            _firebaseManager.PutJson($"conversations/{newConvId}.json", convJson);
+            _firebaseManager.PutJson($"conversations/{newConversationId}.json", JsonConvert.SerializeObject(conversationData));
 
-            // Kullanıcılar altına ekle
-            _conversationService.AddConversationToUser(currentUserId, newConvId);
-            _conversationService.AddConversationToUser(otherUserId, newConvId);
-            string otherUserName = GetNameByUserId(otherUserId);
+            // 5) Her kullanıcı için konuşmayı ekle
+            foreach (string userId in userIds)
+            {
+                _conversationService.AddConversationToUser(userId, newConversationId);
+            }
 
-            AddChatTile(otherUserName, "Henüz mesaj yok.", newConvId, otherUserId);
+            // 6) Yeni konuşmayı UI'de göster
+            AddChatTile(conversationTitle, "Henüz mesaj yok.", newConversationId, string.Join(", ", emails));
 
-            MessageBox.Show("Sohbet başarıyla başlatıldı.");
+            MessageBox.Show("Sohbet başarıyla oluşturuldu.");
         }
 
 
 
         private void btnSend_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(selectedOtherUserId) || string.IsNullOrEmpty(selectedConversationId))
+            if (string.IsNullOrEmpty(selectedConversationId))
             {
                 MessageBox.Show("Lütfen bir sohbet seçin.");
                 return;
@@ -147,33 +165,26 @@ namespace main
                 return;
             }
 
-            // 1) Mesajı Firebase'e ekle
-            var msgObj = new
-            {
-                sender = currentUserId,
-                text = msg,
-                //timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-            };
+            // 1. Mesajı gönder
+            _conversationService.SendMessage(selectedConversationId, currentUserId, msg);
 
-            _firebaseManager.PostJson($"messages/{selectedConversationId}.json", JsonConvert.SerializeObject(msgObj));
-
-            // 2) Conversation'ı güncelle
-            var convUpdate = new
-            {
-                lastMessage = msg,
-                //lastUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-            };
-
-            _firebaseManager.PatchJson($"conversations/{selectedConversationId}.json", JsonConvert.SerializeObject(convUpdate));
-
-            // 3) Mesaj kutusunu temizle
+            // 2. Mesaj kutusunu temizle
             txtMessage.Text = string.Empty;
 
-            // 4) Diğer kullanıcı için tetikleme oluştur
+            // 3. Katılımcıları bul ve tetikleme gönder
+            List<string> participants = GetParticipants(selectedConversationId);
             long unixTimestamp = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
-            _firebaseManager.PutJson($"userUpdates/{selectedOtherUserId}.json", unixTimestamp.ToString());
 
-            // 5) Kendi ekranını güncelle
+            foreach (var participantId in participants)
+            {
+                if (participantId != currentUserId) // Kendiniz için tetikleme göndermeyin
+                {
+                    string triggerUrl = $"userUpdates/{participantId}";
+                    _firebaseManager.PutJson(triggerUrl, unixTimestamp.ToString());
+                }
+            }
+
+            // 4. Kendi ekranınızı güncelleyin
             LoadMessages(selectedConversationId);
         }
 
@@ -197,14 +208,12 @@ namespace main
 
         private void LoadConversations()
         {
-            //Tüm konuşmaları çek
             string convsJson = _firebaseManager.GetJson($"userConversations/{currentUserId}.json");
             if (string.IsNullOrEmpty(convsJson) || convsJson == "null") return;
 
             var conversations = JsonConvert.DeserializeObject<Dictionary<string, bool>>(convsJson);
             if (conversations == null) return;
 
-            //TileControl’u vs. temizlemek istiyorsanız (opsiyonel)
             tileControlChats.Groups.Clear();
             var tileGroup = new TileGroup();
             tileControlChats.Groups.Add(tileGroup);
@@ -216,79 +225,118 @@ namespace main
                 if (string.IsNullOrEmpty(convData) || convData == "null") continue;
 
                 dynamic convObj = JsonConvert.DeserializeObject<dynamic>(convData);
-                string otherUserId = convObj.participants[0] == currentUserId
-                    ? convObj.participants[1].ToString()
-                    : convObj.participants[0].ToString();
 
-                string userName = GetNameByUserId(otherUserId);
+                string chatTitle;
+                var participants = convObj.participants;
+                if (participants.Count == 2) // Eğer iki kişilik bir sohbetse
+                {
+                    string otherUserId = participants[0].ToString() == currentUserId
+                        ? participants[1].ToString()
+                        : participants[0].ToString();
+                    chatTitle = GetNameByUserId(otherUserId); // Karşı tarafın adını kullan
+                }
+                else // Grup sohbeti için başlığı kullan
+                {
+                    chatTitle = convObj.title != null ? convObj.title.ToString() : "Grup";
+                }
+
                 string lastMessage = convObj.lastMessage != null ? (string)convObj.lastMessage : "Henüz mesaj yok.";
 
-                AddChatTile(userName, lastMessage, conversationId, otherUserId);
+                AddChatTile(chatTitle, lastMessage, conversationId, chatTitle);
             }
         }
 
+
         private void AddChatTile(string userName, string lastMessage, string conversationId, string otherUserId)
         {
-            // Eğer hiç grup yoksa, bir tane ekleyelim
             if (tileControlChats.Groups.Count == 0)
             {
                 tileControlChats.Groups.Add(new TileGroup());
             }
             var tileGroupChats = tileControlChats.Groups[0];
 
-            // Mevcut TileItem oluştur
             var tileItem = new TileItem
             {
-                // Metin yerine 2 ayrı element kullanacağız
                 Tag = new { ConversationId = conversationId, OtherUserId = otherUserId },
                 ItemSize = TileItemSize.Medium
             };
 
-            // --- 1) Başlık (örnek: userName) ---
             TileItemElement titleElement = new TileItemElement
             {
                 Text = userName,
                 TextAlignment = TileItemContentAlignment.TopLeft
             };
-            // Font & renk ayarları
-            titleElement.Appearance.Normal.Font = new Font("Tahoma", 10, FontStyle.Bold);
-            titleElement.Appearance.Normal.ForeColor = Color.Black;
 
-            // --- 2) Alt Bilgi (örnek: lastMessage) ---
             TileItemElement subtitleElement = new TileItemElement
             {
                 Text = lastMessage,
                 TextAlignment = TileItemContentAlignment.BottomLeft
             };
-            subtitleElement.Appearance.Normal.Font = new Font("Tahoma", 8, FontStyle.Regular);
-            subtitleElement.Appearance.Normal.ForeColor = Color.Black;
 
-            // Elemanları tileItem’a ekle
             tileItem.Elements.Add(titleElement);
             tileItem.Elements.Add(subtitleElement);
 
-            // Arka plan rengi
             tileItem.AppearanceItem.Normal.BackColor = Color.LightBlue;
-            tileItem.AppearanceItem.Normal.Options.UseBackColor = true;
 
-            // Buton (tile) tıklandığında yapacağımız işlemler
             tileItem.ItemClick += (s, e) =>
             {
                 var tag = (dynamic)((TileItem)s).Tag;
-                selectedConversationId = tag.ConversationId;
-                selectedOtherUserId = tag.OtherUserId;
-
-                // Tıklanınca mesajları yükle
-                LoadMessages(selectedConversationId);
+                selectedConversationId = tag.ConversationId; // Sohbet ID'si atanıyor
+                selectedOtherUserId = tag.OtherUserId; // Seçilen diğer kullanıcı atanıyor
+                LoadMessages(selectedConversationId); // Mesajları yükle
             };
 
-            // Son olarak tileGroup içine ekleyelim
             tileGroupChats.Items.Add(tileItem);
         }
 
+        private List<string> GetParticipants(string conversationId)
+        {
+            string json = _firebaseManager.GetJson($"conversations/{conversationId}.json");
+            if (string.IsNullOrEmpty(json) || json == "null") return new List<string>();
+
+            dynamic conversation = JsonConvert.DeserializeObject<dynamic>(json);
+            List<string> participants = new List<string>();
+
+            foreach (var participant in conversation.participants)
+            {
+                participants.Add(participant.ToString());
+            }
+
+            return participants;
+        }
+
+        private bool IsConversationExists(string userId1, string userId2)
+        {
+            string userConversationsJson = _firebaseManager.GetJson($"userConversations/{userId1}.json");
+            if (string.IsNullOrEmpty(userConversationsJson) || userConversationsJson == "null")
+                return false;
+
+            var conversations = JsonConvert.DeserializeObject<Dictionary<string, bool>>(userConversationsJson);
+            if (conversations == null) return false;
+
+            foreach (var conversationId in conversations.Keys)
+            {
+                string convJson = _firebaseManager.GetJson($"conversations/{conversationId}.json");
+                if (string.IsNullOrEmpty(convJson) || convJson == "null")
+                    continue;
+
+                dynamic convObj = JsonConvert.DeserializeObject<dynamic>(convJson);
+                var participants = convObj.participants;
+
+                // Eğer katılımcılar arasında userId2 varsa, konuşma zaten vardır
+                if (participants != null && participants.Contains(userId2))
+                    return true;
+            }
+
+            return false;
+        }
+
+
+
         private void CheckForNewMessages()
         {
-            string triggerData = _firebaseManager.GetJson($"userUpdates/{currentUserId}.json");
+            string triggerUrl = $"userUpdates/{currentUserId}.json";
+            string triggerData = _firebaseManager.GetJson(triggerUrl);
 
             if (!string.IsNullOrEmpty(triggerData) && triggerData != "null")
             {
@@ -298,14 +346,13 @@ namespace main
                 {
                     lastCheckedUpdate = triggerTime;
 
-                    // Eğer bir konuşma seçiliyse mesajları yükle
+                    // Sohbeti yenile
+                    LoadConversations();
+
                     if (!string.IsNullOrEmpty(selectedConversationId))
                     {
                         LoadMessages(selectedConversationId);
                     }
-
-                    // Konuşmaların listesini yenile
-                    LoadConversations();
                 }
             }
         }
@@ -422,5 +469,62 @@ namespace main
         {
 
         }
+
+        private void selfName_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void selfID_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void chatSettings_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(selectedConversationId))
+            {
+                MessageBox.Show("Lütfen bir sohbet seçin.");
+                return;
+            }
+
+            // Firebase'den mevcut sohbet verisini alın
+            string convData = _firebaseManager.GetJson($"conversations/{selectedConversationId}.json");
+            if (string.IsNullOrEmpty(convData) || convData == "null")
+            {
+                MessageBox.Show("Sohbet verisi alınamadı.");
+                return;
+            }
+
+            dynamic convObj = JsonConvert.DeserializeObject<dynamic>(convData);
+            var participants = convObj.participants;
+
+            // Katılımcı sayısını kontrol edin
+            if (participants == null || participants.Count < 3)
+            {
+                MessageBox.Show("Bu sohbet bir grup sohbeti değil. Grup adını yalnızca grup sohbetlerinde değiştirebilirsiniz.");
+                return;
+            }
+
+            // Kullanıcıdan yeni sohbet adını alın
+            string currentTitle = convObj.title != null ? convObj.title.ToString() : "Mevcut Ad Yok";
+            string newChatTitle = XtraInputBox.Show($"Mevcut Ad: {currentTitle}\nYeni grup adını girin:", "Grup Ayarları", "");
+
+            if (string.IsNullOrEmpty(newChatTitle))
+            {
+                MessageBox.Show("Grup adı boş olamaz.");
+                return;
+            }
+
+            // Firebase'de grup adını güncelle
+            var updateData = new { title = newChatTitle };
+            _firebaseManager.PatchJson($"conversations/{selectedConversationId}", JsonConvert.SerializeObject(updateData));
+
+            // Arayüzü güncelle
+            LoadConversations();
+
+            MessageBox.Show("Grup adı başarıyla değiştirildi.");
+        }
+
     }
 }

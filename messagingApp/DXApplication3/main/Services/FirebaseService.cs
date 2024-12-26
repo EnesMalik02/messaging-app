@@ -38,33 +38,43 @@ namespace main.Services
 
         public void PutJson(string relativeUrl, string jsonBody)
         {
+            string url = $"{_firebaseUrl}/{relativeUrl}.json";
+            Console.WriteLine($"PUT Request URL: {url}");
+            Console.WriteLine($"PUT Request Body: {jsonBody}");
+
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "PUT";
+            request.ContentType = "application/json";
+
             try
             {
-                string url = $"{_firebaseUrl}/{relativeUrl}";
-                var request = (HttpWebRequest)WebRequest.Create(url);
-                request.Method = "PUT";
-                request.ContentType = "application/json";
-
                 using (var sw = new StreamWriter(request.GetRequestStream()))
                 {
                     sw.Write(jsonBody);
                 }
-
                 using (var response = (HttpWebResponse)request.GetResponse())
                 {
-                    Console.WriteLine($"Response: {response.StatusCode}");
+                    Console.WriteLine($"Response Status: {response.StatusCode}");
                 }
             }
             catch (WebException ex)
             {
-                using (var sr = new StreamReader(ex.Response.GetResponseStream()))
+                if (ex.Response != null)
                 {
-                    string responseText = sr.ReadToEnd();
-                    Console.WriteLine($"Error Response: {responseText}");
+                    using (var sr = new StreamReader(ex.Response.GetResponseStream()))
+                    {
+                        string responseText = sr.ReadToEnd();
+                        Console.WriteLine($"Error Response: {responseText}");
+
+                        // Firebase'den dönen detaylı hata mesajı
+                        throw new Exception($"Firebase PUT işlemi başarısız oldu. Hata: {responseText}");
+                    }
                 }
-                throw;
+                throw new Exception("Firebase PUT işlemi başarısız oldu. Hata: " + ex.Message);
             }
         }
+
+
 
 
         public void PostJson(string relativeUrl, string jsonBody)
@@ -82,7 +92,7 @@ namespace main.Services
 
         public void PatchJson(string relativeUrl, string jsonBody)
         {
-            string url = $"{_firebaseUrl}/{relativeUrl}";
+            string url = $"{_firebaseUrl}/{relativeUrl}.json";
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "PATCH";
             request.ContentType = "application/json";

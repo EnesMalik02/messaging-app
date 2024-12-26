@@ -35,7 +35,7 @@ namespace main.Services
                 //lastUpdate = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
             };
             string convUpdateJson = JsonConvert.SerializeObject(convUpdate);
-            _firebase.PatchJson($"conversations/{conversationId}.json", convUpdateJson);
+            _firebase.PatchJson($"conversations/{conversationId}", convUpdateJson);
         }
 
         public Dictionary<string, dynamic> GetMessages(string conversationId)
@@ -58,7 +58,7 @@ namespace main.Services
 
         public void AddConversationToUser(string userId, string conversationId)
         {
-            _firebase.PutJson($"userConversations/{userId}/{conversationId}.json", "\"true\"");
+            _firebase.PutJson($"userConversations/{userId}/{conversationId}", "\"true\"");
         }
 
         public string GetJson(string relativePath)
