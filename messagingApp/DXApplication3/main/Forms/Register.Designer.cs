@@ -64,7 +64,7 @@
             this.btnSignUp.Name = "btnSignUp";
             this.btnSignUp.Size = new System.Drawing.Size(93, 23);
             this.btnSignUp.TabIndex = 3;
-            this.btnSignUp.Text = "simpleButton1";
+            this.btnSignUp.Text = "Kayıt Ol";
             this.btnSignUp.Click += new System.EventHandler(this.btnSignUp_Click);
             // 
             // label1
