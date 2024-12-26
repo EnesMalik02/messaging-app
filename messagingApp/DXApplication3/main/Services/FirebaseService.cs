@@ -92,38 +92,15 @@ namespace main.Services
 
         public void PatchJson(string relativeUrl, string jsonBody)
         {
-            string url = $"{_firebaseUrl}/{relativeUrl}";
-            Console.WriteLine($"PATCH Request URL: {url}");
-            Console.WriteLine($"PATCH Request Body: {jsonBody}");
-
-            try
+            string url = $"{_firebaseUrl}/{relativeUrl}.json";
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "PATCH";
+            request.ContentType = "application/json";
+            using (var sw = new StreamWriter(request.GetRequestStream()))
             {
-                var request = (HttpWebRequest)WebRequest.Create(url);
-                request.Method = "PATCH";
-                request.ContentType = "application/json";
-
-                using (var sw = new StreamWriter(request.GetRequestStream()))
-                {
-                    sw.Write(jsonBody); // JSON nesnesi gönderiliyor
-                }
-
-                using (var response = (HttpWebResponse)request.GetResponse())
-                {
-                    Console.WriteLine($"Response Status: {response.StatusCode}");
-                }
+                sw.Write(jsonBody);
             }
-            catch (WebException ex)
-            {
-                if (ex.Response != null)
-                {
-                    using (var sr = new StreamReader(ex.Response.GetResponseStream()))
-                    {
-                        string responseText = sr.ReadToEnd();
-                        Console.WriteLine($"Error Response: {responseText}");
-                    }
-                }
-                throw new Exception("Error during PATCH request", ex);
-            }
+            request.GetResponse().Close();
         }
 
 
