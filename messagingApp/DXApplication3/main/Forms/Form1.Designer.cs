@@ -37,6 +37,7 @@ namespace main
             this.btnNewConversation = new DevExpress.XtraEditors.SimpleButton();
             this.txtOtherUserId = new System.Windows.Forms.TextBox();
             this.tileControlChats = new DevExpress.XtraEditors.TileControl();
+            this.updateBtn = new DevExpress.XtraEditors.SimpleButton();
             this.chatSettings = new DevExpress.XtraEditors.SimpleButton();
             this.panelControl2 = new DevExpress.XtraEditors.PanelControl();
             this.simpleButton1 = new DevExpress.XtraEditors.SimpleButton();
@@ -50,7 +51,6 @@ namespace main
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.behaviorManager1 = new DevExpress.Utils.Behaviors.BehaviorManager(this.components);
             this.tileGroup1 = new DevExpress.XtraEditors.TileGroup();
-            this.updateBtn = new DevExpress.XtraEditors.SimpleButton();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerControl1)).BeginInit();
             this.splitContainerControl1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.panelControl2)).BeginInit();
@@ -119,6 +119,16 @@ namespace main
             this.tileControlChats.Text = "tileControl1";
             this.tileControlChats.Click += new System.EventHandler(this.tileControlChats_Click);
             // 
+            // updateBtn
+            // 
+            this.updateBtn.ButtonStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+            this.updateBtn.ImageOptions.Image = ((System.Drawing.Image)(resources.GetObject("updateBtn.ImageOptions.Image")));
+            this.updateBtn.Location = new System.Drawing.Point(860, 3);
+            this.updateBtn.Name = "updateBtn";
+            this.updateBtn.Size = new System.Drawing.Size(32, 30);
+            this.updateBtn.TabIndex = 9;
+            this.updateBtn.Click += new System.EventHandler(this.updateBtn_Click);
+            // 
             // chatSettings
             // 
             this.chatSettings.Location = new System.Drawing.Point(1, 12);
@@ -130,19 +140,21 @@ namespace main
             // 
             // panelControl2
             // 
+            this.panelControl2.AutoSize = true;
+            this.panelControl2.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
             this.panelControl2.Controls.Add(this.simpleButton1);
             this.panelControl2.Controls.Add(this.selfID);
             this.panelControl2.Controls.Add(this.selfName);
-            this.panelControl2.Location = new System.Drawing.Point(621, 41);
+            this.panelControl2.Location = new System.Drawing.Point(621, 70);
             this.panelControl2.Name = "panelControl2";
-            this.panelControl2.Size = new System.Drawing.Size(280, 107);
+            this.panelControl2.Size = new System.Drawing.Size(280, 511);
             this.panelControl2.TabIndex = 7;
             // 
             // simpleButton1
             // 
-            this.simpleButton1.Location = new System.Drawing.Point(93, 77);
+            this.simpleButton1.Location = new System.Drawing.Point(62, 72);
             this.simpleButton1.Name = "simpleButton1";
-            this.simpleButton1.Size = new System.Drawing.Size(107, 25);
+            this.simpleButton1.Size = new System.Drawing.Size(156, 31);
             this.simpleButton1.TabIndex = 6;
             this.simpleButton1.Text = "ID Kopyala";
             this.simpleButton1.Click += new System.EventHandler(this.simpleButton1_Click_1);
@@ -220,16 +232,6 @@ namespace main
             // 
             this.tileGroup1.Name = "tileGroup1";
             this.tileGroup1.Text = "Sohbetler";
-            // 
-            // updateBtn
-            // 
-            this.updateBtn.ButtonStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
-            this.updateBtn.ImageOptions.Image = ((System.Drawing.Image)(resources.GetObject("simpleButton2.ImageOptions.Image")));
-            this.updateBtn.Location = new System.Drawing.Point(860, 3);
-            this.updateBtn.Name = "updateBtn";
-            this.updateBtn.Size = new System.Drawing.Size(32, 30);
-            this.updateBtn.TabIndex = 9;
-            this.updateBtn.Click += new System.EventHandler(this.updateBtn_Click);
             // 
             // Form1
             // 
