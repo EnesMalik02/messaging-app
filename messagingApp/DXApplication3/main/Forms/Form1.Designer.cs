@@ -78,7 +78,7 @@ namespace main
             this.splitContainerControl1.Panel2.Controls.Add(this.txtMessage);
             this.splitContainerControl1.Panel2.Controls.Add(this.panelControl1);
             this.splitContainerControl1.Panel2.Text = "Panel2";
-            this.splitContainerControl1.Size = new System.Drawing.Size(1097, 783);
+            this.splitContainerControl1.Size = new System.Drawing.Size(1097, 622);
             this.splitContainerControl1.SplitterPosition = 180;
             this.splitContainerControl1.TabIndex = 0;
             this.splitContainerControl1.Text = "splitContainerControl1";
@@ -98,6 +98,7 @@ namespace main
             this.txtOtherUserId.Name = "txtOtherUserId";
             this.txtOtherUserId.Size = new System.Drawing.Size(149, 21);
             this.txtOtherUserId.TabIndex = 1;
+            this.txtOtherUserId.Tag = "";
             // 
             // tileControlChats
             // 
@@ -237,7 +238,7 @@ namespace main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1097, 783);
+            this.ClientSize = new System.Drawing.Size(1097, 622);
             this.Controls.Add(this.splitContainerControl1);
             this.Name = "Form1";
             this.Text = "Form1";
