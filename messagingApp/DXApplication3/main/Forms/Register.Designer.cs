@@ -60,7 +60,7 @@
             // 
             // btnSignUp
             // 
-            this.btnSignUp.Location = new System.Drawing.Point(75, 217);
+            this.btnSignUp.Location = new System.Drawing.Point(93, 226);
             this.btnSignUp.Name = "btnSignUp";
             this.btnSignUp.Size = new System.Drawing.Size(93, 23);
             this.btnSignUp.TabIndex = 3;

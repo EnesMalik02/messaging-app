@@ -24,8 +24,8 @@ namespace main
             Login login3 = new Login();
 
             login1.Show();
-            login2.Show();
-            login3.Show();
+            //login2.Show();
+            //login3.Show();
 
             Application.Run();
 
