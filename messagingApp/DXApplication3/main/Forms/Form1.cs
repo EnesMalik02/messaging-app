@@ -473,7 +473,7 @@ namespace main
 
         private void simpleButton1_Click_1(object sender, EventArgs e)
         {
-
+            Clipboard.SetText(currentUserId);
         }
 
         private void selfName_Click_1(object sender, EventArgs e)

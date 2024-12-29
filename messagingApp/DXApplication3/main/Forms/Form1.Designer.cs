@@ -40,6 +40,8 @@ namespace main
             this.updateBtn = new DevExpress.XtraEditors.SimpleButton();
             this.chatSettings = new DevExpress.XtraEditors.SimpleButton();
             this.panelControl2 = new DevExpress.XtraEditors.PanelControl();
+            this.layoutControl1 = new DevExpress.XtraLayout.LayoutControl();
+            this.layoutControlGroup1 = new DevExpress.XtraLayout.LayoutControlGroup();
             this.simpleButton1 = new DevExpress.XtraEditors.SimpleButton();
             this.selfID = new System.Windows.Forms.Label();
             this.selfName = new System.Windows.Forms.Label();
@@ -51,18 +53,16 @@ namespace main
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.behaviorManager1 = new DevExpress.Utils.Behaviors.BehaviorManager(this.components);
             this.tileGroup1 = new DevExpress.XtraEditors.TileGroup();
-            this.layoutControl1 = new DevExpress.XtraLayout.LayoutControl();
-            this.layoutControlGroup1 = new DevExpress.XtraLayout.LayoutControlGroup();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerControl1)).BeginInit();
             this.splitContainerControl1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.panelControl2)).BeginInit();
             this.panelControl2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControl1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlGroup1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtMessage.Properties)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.panelControl1)).BeginInit();
             this.panelControl1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.behaviorManager1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControl1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlGroup1)).BeginInit();
             this.SuspendLayout();
             // 
             // splitContainerControl1
@@ -156,6 +156,23 @@ namespace main
             this.panelControl2.Size = new System.Drawing.Size(282, 511);
             this.panelControl2.TabIndex = 7;
             // 
+            // layoutControl1
+            // 
+            this.layoutControl1.Location = new System.Drawing.Point(5, 153);
+            this.layoutControl1.Name = "layoutControl1";
+            this.layoutControl1.Root = this.layoutControlGroup1;
+            this.layoutControl1.Size = new System.Drawing.Size(274, 26);
+            this.layoutControl1.TabIndex = 7;
+            this.layoutControl1.Text = "layoutControl1";
+            // 
+            // layoutControlGroup1
+            // 
+            this.layoutControlGroup1.EnableIndentsWithoutBorders = DevExpress.Utils.DefaultBoolean.True;
+            this.layoutControlGroup1.GroupBordersVisible = false;
+            this.layoutControlGroup1.Name = "layoutControlGroup1";
+            this.layoutControlGroup1.Size = new System.Drawing.Size(274, 26);
+            this.layoutControlGroup1.TextVisible = false;
+            // 
             // simpleButton1
             // 
             this.simpleButton1.Location = new System.Drawing.Point(62, 72);
@@ -178,7 +195,7 @@ namespace main
             // 
             // selfName
             // 
-            this.selfName.Location = new System.Drawing.Point(28, 0);
+            this.selfName.Location = new System.Drawing.Point(28, 9);
             this.selfName.Name = "selfName";
             this.selfName.Size = new System.Drawing.Size(233, 49);
             this.selfName.TabIndex = 4;
@@ -238,23 +255,6 @@ namespace main
             this.tileGroup1.Name = "tileGroup1";
             this.tileGroup1.Text = "Sohbetler";
             // 
-            // layoutControl1
-            // 
-            this.layoutControl1.Location = new System.Drawing.Point(5, 153);
-            this.layoutControl1.Name = "layoutControl1";
-            this.layoutControl1.Root = this.layoutControlGroup1;
-            this.layoutControl1.Size = new System.Drawing.Size(274, 26);
-            this.layoutControl1.TabIndex = 7;
-            this.layoutControl1.Text = "layoutControl1";
-            // 
-            // layoutControlGroup1
-            // 
-            this.layoutControlGroup1.EnableIndentsWithoutBorders = DevExpress.Utils.DefaultBoolean.True;
-            this.layoutControlGroup1.GroupBordersVisible = false;
-            this.layoutControlGroup1.Name = "layoutControlGroup1";
-            this.layoutControlGroup1.Size = new System.Drawing.Size(274, 26);
-            this.layoutControlGroup1.TextVisible = false;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -272,12 +272,12 @@ namespace main
             ((System.ComponentModel.ISupportInitialize)(this.panelControl2)).EndInit();
             this.panelControl2.ResumeLayout(false);
             this.panelControl2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControl1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.layoutControlGroup1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txtMessage.Properties)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.panelControl1)).EndInit();
             this.panelControl1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.behaviorManager1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControl1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.layoutControlGroup1)).EndInit();
             this.ResumeLayout(false);
 
         }

@@ -109,9 +109,6 @@
     <Compile Include="Forms\Updates.Designer.cs">
       <DependentUpon>Updates.cs</DependentUpon>
     </Compile>
-    <Compile Include="Models\ChatItem.cs" />
-    <Compile Include="Models\MessageItem.cs" />
-    <Compile Include="Models\MessageList.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ConversationService.cs" />
