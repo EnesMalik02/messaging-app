@@ -241,7 +241,8 @@ namespace main
             this.ClientSize = new System.Drawing.Size(1097, 622);
             this.Controls.Add(this.splitContainerControl1);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Messaging App";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_Closing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Shown += new System.EventHandler(this.Form1_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerControl1)).EndInit();

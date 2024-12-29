@@ -630,5 +630,11 @@ namespace main
         {
 
         }
+
+        private void Form1_Closing(object sender, FormClosingEventArgs e)
+        {
+            Application.Exit();
+
+        }
     }
 }

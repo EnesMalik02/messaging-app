@@ -160,5 +160,10 @@ namespace main.Forms
         {
 
         }
+
+        private void Form_Closing(object sender, FormClosingEventArgs e)
+        {
+            Application.Exit();
+        }
     }
     }

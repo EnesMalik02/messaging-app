@@ -203,5 +203,10 @@ namespace main
             registerForm.Show();
             this.Hide();
         }
+
+        private void Form_Closing(object sender, FormClosingEventArgs e)
+        {
+            Application.Exit();
+        }
     }
 }
