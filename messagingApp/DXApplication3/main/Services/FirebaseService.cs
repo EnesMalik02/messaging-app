@@ -39,8 +39,8 @@ namespace main.Services
         public void PutJson(string relativeUrl, string jsonBody)
         {
             string url = $"{_firebaseUrl}/{relativeUrl}.json";
-            Console.WriteLine($"PUT Request URL: {url}");
-            Console.WriteLine($"PUT Request Body: {jsonBody}");
+            //Console.WriteLine($"PUT Request URL: {url}");
+            //Console.WriteLine($"PUT Request Body: {jsonBody}");
 
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "PUT";

@@ -628,7 +628,8 @@ namespace main
 
         private void updateBtn_Click(object sender, EventArgs e)
         {
-
+            var updateForm = new Forms.Updates();
+            updateForm.Show();
         }
 
         private void Form1_Closing(object sender, FormClosingEventArgs e)
