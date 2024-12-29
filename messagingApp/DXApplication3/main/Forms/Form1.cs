@@ -440,7 +440,7 @@ namespace main
         {
             this.Hide();
             Login loginForm = new Login();
-            loginForm.Show();
+            loginForm.Show(); 
             this.Close();
         }
 
